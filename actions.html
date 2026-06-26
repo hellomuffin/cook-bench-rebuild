@@ -100,6 +100,7 @@
   <a href="taxonomy.html">▤ Taxonomy</a>
   <a href="#builder" style="color:var(--blue)">🎮 Try the chain builder</a>
   <a href="#watch" style="color:var(--green)">▶ Watch Gemini play</a>
+  <a href="#ladder" style="color:var(--red)">⛰ Difficulty ladder</a>
   <span class="spacer"></span>
   <a href="index.html#play" style="color:var(--accent)">▶ Run it</a>
 </nav>
@@ -260,6 +261,60 @@
         onions" → "serve it"</i> and delivers <b>+21</b> in 20 frames. The audio-native Live models are <i>weak and chatty</i>
         (they often mistime or stall — offline still wins per <a href="https://arxiv.org/pdf/2507.09313">arXiv:2507.09313</a>), but
         with an explicit per-frame ping + intent-queuing the real streaming API does complete the instance task.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<section id="ladder">
+  <div class="wrap">
+    <div class="kicker">The difficulty ladder — where streaming control breaks</div>
+    <h2>One easy rung, then a cliff</h2>
+    <p class="muted">The onion-soup task above is a single decision: <i>look, identify, scoop</i>. To probe the limits of
+      streaming control we add a ladder of <b>ordered, multi-step</b> tasks — each must be assembled on the plate in an
+      <b>exact sequence</b>, and the engine rejects a wrong-order plate. Burning is disabled, so these are pure
+      <b>multi-step reasoning</b> tests, not cook-timer races. All three are verified feasible — the scripted BFS bot
+      completes each. The streaming VLM does not.</p>
+    <div class="callout"><b>Result.</b> The strongest model on this key (<b>gemini-3.1-pro-preview</b>, sliding-window, pure RGB)
+      solves the instance task (+21) but <b>fails every rung of the ordered-assembly ladder</b> — and the audio-native
+      <b>Gemini Live</b> model fails it too (weak &amp; chatty). The failure mode is consistent: the model can gather, cook
+      and chop the right ingredients, but loses track of <i>what it has already added</i> from pixels alone and violates the
+      required order. This is exactly the kind of long-horizon, state-tracking gap a streaming-interaction benchmark exists to surface.</p>
+
+    <table class="ladder-tbl" style="width:100%;border-collapse:collapse;margin:22px 0;font-size:15px">
+      <thead><tr style="text-align:left;border-bottom:2px solid var(--line)">
+        <th style="padding:8px 10px">Rung</th><th style="padding:8px 10px">Task</th>
+        <th style="padding:8px 10px">Required order</th><th style="padding:8px 10px">Bot</th><th style="padding:8px 10px">Streaming VLM</th></tr></thead>
+      <tbody>
+        <tr style="border-bottom:1px solid var(--line)"><td style="padding:8px 10px">base</td><td style="padding:8px 10px">Onion Soup <span class="vtag">instance-grounding</span></td><td style="padding:8px 10px">3× cooked onion (1 batch)</td>
+            <td style="padding:8px 10px;color:var(--green)">✓</td><td style="padding:8px 10px;color:var(--green)">✓ +21 (pro · flash · Live)</td></tr>
+        <tr style="border-bottom:1px solid var(--line)"><td style="padding:8px 10px">hard</td><td style="padding:8px 10px">Cheeseburger <span class="vtag">3 ordered</span></td><td style="padding:8px 10px">bun → fried patty → cheese</td>
+            <td style="padding:8px 10px;color:var(--green)">✓</td><td style="padding:8px 10px;color:var(--red)">✗ wrong order (bun → cheese → patty)</td></tr>
+        <tr style="border-bottom:1px solid var(--line)"><td style="padding:8px 10px">harder</td><td style="padding:8px 10px">Fried Rice <span class="vtag">3 tools</span></td><td style="padding:8px 10px">cooked rice → fried egg → chopped onion</td>
+            <td style="padding:8px 10px;color:var(--green)">✓</td><td style="padding:8px 10px;color:var(--red)">✗ carries raw rice; plate ends [rice, rice]</td></tr>
+        <tr><td style="padding:8px 10px">hardest</td><td style="padding:8px 10px">Deluxe Burger <span class="vtag">4 ordered, 1 board</span></td><td style="padding:8px 10px">bun → patty → chopped lettuce → chopped tomato</td>
+            <td style="padding:8px 10px;color:var(--green)">✓</td><td style="padding:8px 10px;color:var(--red)">✗ loses track; scoops three buns</td></tr>
+      </tbody>
+    </table>
+
+    <p class="muted" style="margin-top:22px">Below: the same pure-RGB streaming setup as above (left = what the model sees;
+      right = the human-only HUD), now on the ladder. Watch where each run breaks.</p>
+    <div class="grid2">
+      <figure class="videowrap">
+        <video controls muted loop playsinline preload="none" src="assets/stream/ladder_hard_cheeseburger.mp4"></video>
+        <figcaption><b style="color:var(--red)">hard · Cheeseburger ✗</b> — it fries the patty and gathers all three
+          components, but stacks them <b>bun → cheese → patty</b>. The ordered recipe rejects the plate at the pass.</figcaption>
+      </figure>
+      <figure class="videowrap">
+        <video controls muted loop playsinline preload="none" src="assets/stream/ladder_harder_friedrice.mp4"></video>
+        <figcaption><b style="color:var(--red)">harder · Fried Rice ✗</b> — three different tools (pot, pan, board) overwhelm it:
+          it wanders holding <b>raw rice</b>, mistimes scoops, and never assembles rice → egg → onion in order.</figcaption>
+      </figure>
+    </div>
+    <figure class="videowrap" style="margin-top:14px">
+      <video controls muted loop playsinline preload="none" src="assets/stream/ladder_hardest_deluxe.mp4"></video>
+      <figcaption><b style="color:var(--red)">hardest · Deluxe Burger ✗</b> — four ordered components on a single board.
+        With no on-screen memory of its progress, it repeatedly re-scoops the bun source and ends holding a
+        <b>plate of three buns</b>. The cliff is steep: instance-grounding is solved, ordered long-horizon assembly is not.</figcaption>
     </figure>
   </div>
 </section>

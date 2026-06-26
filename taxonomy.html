@@ -159,6 +159,39 @@
 
 <main class="wrap" id="cats"></main>
 
+<section class="wrap" id="generator-live" style="margin:10px auto 40px">
+  <div class="kicker" style="color:var(--accent);font-weight:800;letter-spacing:2px;text-transform:uppercase;font-size:12px;margin-bottom:8px">From space to task — the generator</div>
+  <h2 style="font-size:28px;margin:0 0 10px">The grammar, now executable</h2>
+  <p class="muted">The taxonomy above isn't just a diagram — it's implemented as a <b>compositional generator</b>
+    (<code>cooksim/core/generator.py</code>). It samples an archetype, fills the ingredient × state slots, then
+    <b>validates</b> the result against the engine's real rules (well-formed · plate/cook-station capacity ·
+    <code>feasible_recipes</code>), <b>places</b> the required sources and tools on a freshly generated kitchen, estimates the
+    cook's <b>route length</b> by BFS, and sets a difficulty-scaled <b>order deadline</b>. The output is a runnable task — and
+    every generated task is checked to be <b>solvable</b> (the scripted bot completes it; 16/16 and the test-suite's 8/8).</p>
+  <p class="muted">A fresh draw of ten generated tasks (deterministic, seed 20) — several are dishes <i>not</i> in the
+    19-recipe catalogue (e.g. a fish deluxe burger, a four-part rice bowl):</p>
+  <table style="width:100%;border-collapse:collapse;margin:16px 0;font-size:14.5px;background:linear-gradient(180deg,var(--card),var(--card2));border:1px solid var(--line);border-radius:12px;overflow:hidden">
+    <thead><tr style="text-align:left;border-bottom:2px solid var(--line)">
+      <th style="padding:8px 9px">Archetype</th><th style="padding:8px 9px">Generated dish (assembly)</th>
+      <th style="padding:8px 9px;text-align:center">reward</th><th style="padding:8px 9px;text-align:center">diff</th>
+      <th style="padding:8px 9px;text-align:center">route</th><th style="padding:8px 9px;text-align:center">deadline</th></tr></thead>
+    <tbody>
+        <tr style="border-bottom:1px solid var(--line)"><td style="padding:7px 9px">🍲 soup</td><td style="padding:7px 9px">mushroom·cooked + mushroom·cooked + mushroom·cooked </td><td style="padding:7px 9px;text-align:center">30</td><td style="padding:7px 9px;text-align:center">2</td><td style="padding:7px 9px;text-align:center">46</td><td style="padding:7px 9px;text-align:center">273t</td></tr>
+        <tr style="border-bottom:1px solid var(--line)"><td style="padding:7px 9px">🥗 salad</td><td style="padding:7px 9px">lettuce·chopped + onion·chopped </td><td style="padding:7px 9px;text-align:center">16</td><td style="padding:7px 9px;text-align:center">2</td><td style="padding:7px 9px;text-align:center">39</td><td style="padding:7px 9px;text-align:center">167t</td></tr>
+        <tr style="border-bottom:1px solid var(--line)"><td style="padding:7px 9px">🍔 burger</td><td style="padding:7px 9px">bun·raw → fish·cooked → lettuce·chopped → tomato·chopped <span class="vtag" style="background:#3a2336;color:#e87da8">ordered</span></td><td style="padding:7px 9px;text-align:center">43</td><td style="padding:7px 9px;text-align:center">5</td><td style="padding:7px 9px;text-align:center">38</td><td style="padding:7px 9px;text-align:center">198t</td></tr>
+        <tr style="border-bottom:1px solid var(--line)"><td style="padding:7px 9px">🍤 fried</td><td style="padding:7px 9px">egg·cooked → fish·cooked → cheese·raw <span class="vtag" style="background:#3a2336;color:#e87da8">ordered</span></td><td style="padding:7px 9px;text-align:center">31</td><td style="padding:7px 9px;text-align:center">3</td><td style="padding:7px 9px;text-align:center">29</td><td style="padding:7px 9px;text-align:center">188t</td></tr>
+        <tr style="border-bottom:1px solid var(--line)"><td style="padding:7px 9px">🍚 rice</td><td style="padding:7px 9px">rice·cooked → egg·cooked → onion·chopped <span class="vtag" style="background:#3a2336;color:#e87da8">ordered</span></td><td style="padding:7px 9px;text-align:center">35</td><td style="padding:7px 9px;text-align:center">4</td><td style="padding:7px 9px;text-align:center">51</td><td style="padding:7px 9px;text-align:center">263t</td></tr>
+        <tr style="border-bottom:1px solid var(--line)"><td style="padding:7px 9px">🍕 baked</td><td style="padding:7px 9px">cheese·cooked + dough·cooked + tomato·cooked </td><td style="padding:7px 9px;text-align:center">30</td><td style="padding:7px 9px;text-align:center">2</td><td style="padding:7px 9px;text-align:center">31</td><td style="padding:7px 9px;text-align:center">225t</td></tr>
+        <tr style="border-bottom:1px solid var(--line)"><td style="padding:7px 9px">🍔 burger</td><td style="padding:7px 9px">bun·raw → meat·cooked → lettuce·chopped → tomato·chopped <span class="vtag" style="background:#3a2336;color:#e87da8">ordered</span></td><td style="padding:7px 9px;text-align:center">43</td><td style="padding:7px 9px;text-align:center">5</td><td style="padding:7px 9px;text-align:center">56</td><td style="padding:7px 9px;text-align:center">255t</td></tr>
+        <tr style="border-bottom:1px solid var(--line)"><td style="padding:7px 9px">🍚 rice</td><td style="padding:7px 9px">rice·cooked → egg·cooked → fish·chopped → onion·chopped <span class="vtag" style="background:#3a2336;color:#e87da8">ordered</span></td><td style="padding:7px 9px;text-align:center">49</td><td style="padding:7px 9px;text-align:center">5</td><td style="padding:7px 9px;text-align:center">70</td><td style="padding:7px 9px;text-align:center">330t</td></tr>
+        <tr style="border-bottom:1px solid var(--line)"><td style="padding:7px 9px">🍕 baked</td><td style="padding:7px 9px">dough·cooked + mushroom·cooked + tomato·cooked </td><td style="padding:7px 9px;text-align:center">30</td><td style="padding:7px 9px;text-align:center">2</td><td style="padding:7px 9px;text-align:center">45</td><td style="padding:7px 9px;text-align:center">270t</td></tr>
+        <tr><td style="padding:7px 9px">🥗 salad</td><td style="padding:7px 9px">onion·chopped </td><td style="padding:7px 9px;text-align:center">7</td><td style="padding:7px 9px;text-align:center">2</td><td style="padding:7px 9px;text-align:center">16</td><td style="padding:7px 9px;text-align:center">87t</td></tr>
+    </tbody>
+  </table>
+  <p class="muted" style="font-size:14px">Reproduce: <code>python -m cooksim.core.generator -n 10 --seed 20 --events</code>.
+    Drop any draw straight into <code>KitchenGame</code> with its layout, a one-recipe <code>RecipeBook</code>, and the deadline as the order timer.</p>
+</section>
+
 <footer>
   <div class="wrap">
     <p>🍳 <b>CookSim</b> — the compositional event space.
