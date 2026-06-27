@@ -267,18 +267,19 @@
 
 <section id="ladder">
   <div class="wrap">
-    <div class="kicker">The difficulty ladder — where streaming control breaks</div>
-    <h2>One easy rung, then a cliff</h2>
+    <div class="kicker">The difficulty ladder — how far streaming control gets</div>
+    <h2>A gradient, not a single cliff</h2>
     <p class="muted">The onion-soup task above is a single decision: <i>look, identify, scoop</i>. To probe the limits of
       streaming control we add a ladder of <b>ordered, multi-step</b> tasks — each must be assembled on the plate in an
       <b>exact sequence</b>, and the engine rejects a wrong-order plate. Burning is disabled, so these are pure
-      <b>multi-step reasoning</b> tests, not cook-timer races. All three are verified feasible — the scripted BFS bot
-      completes each. The streaming VLM does not.</p>
+      <b>multi-step reasoning</b> tests, not cook-timer races. All three are verified feasible — the scripted BFS bot completes each.</p>
     <div class="callout"><b>Result.</b> The strongest model on this key (<b>gemini-3.1-pro-preview</b>, sliding-window, pure RGB)
-      solves the instance task (+21) but <b>fails every rung of the ordered-assembly ladder</b> — and the audio-native
-      <b>Gemini Live</b> model fails it too (weak &amp; chatty). The failure mode is consistent: the model can gather, cook
-      and chop the right ingredients, but loses track of <i>what it has already added</i> from pixels alone and violates the
-      required order. This is exactly the kind of long-horizon, state-tracking gap a streaming-interaction benchmark exists to surface.</p>
+      degrades smoothly with horizon: it solves the instance task (+21), and on the <b>3-component Cheeseburger it usually
+      delivers</b> (+34, ≈3 of 4 runs) — recovering from a handful of mis-timed commands — but it <b>fails the longer
+      Fried Rice and Deluxe Burger</b> (3 tools / 4 ordered components). The audio-native <b>Gemini Live</b> model is weaker
+      still and fails from the Cheeseburger up. The recurring failure: the model gathers, cooks and chops the right
+      ingredients but loses track of <i>what it has already added</i> from pixels alone and violates the required order — the
+      long-horizon, state-tracking gap a streaming-interaction benchmark exists to surface.</p>
 
     <table class="ladder-tbl" style="width:100%;border-collapse:collapse;margin:22px 0;font-size:15px">
       <thead><tr style="text-align:left;border-bottom:2px solid var(--line)">
@@ -288,7 +289,7 @@
         <tr style="border-bottom:1px solid var(--line)"><td style="padding:8px 10px">base</td><td style="padding:8px 10px">Onion Soup <span class="vtag">instance-grounding</span></td><td style="padding:8px 10px">3× cooked onion (1 batch)</td>
             <td style="padding:8px 10px;color:var(--green)">✓</td><td style="padding:8px 10px;color:var(--green)">✓ +21 (pro · flash · Live)</td></tr>
         <tr style="border-bottom:1px solid var(--line)"><td style="padding:8px 10px">hard</td><td style="padding:8px 10px">Cheeseburger <span class="vtag">3 ordered</span></td><td style="padding:8px 10px">bun → fried patty → cheese</td>
-            <td style="padding:8px 10px;color:var(--green)">✓</td><td style="padding:8px 10px;color:var(--red)">✗ wrong order (bun → cheese → patty)</td></tr>
+            <td style="padding:8px 10px;color:var(--green)">✓</td><td style="padding:8px 10px;color:var(--accent)">◑ usually +34 (≈3/4); recovers from dropped commands. fails = wrong order</td></tr>
         <tr style="border-bottom:1px solid var(--line)"><td style="padding:8px 10px">harder</td><td style="padding:8px 10px">Fried Rice <span class="vtag">3 tools</span></td><td style="padding:8px 10px">cooked rice → fried egg → chopped onion</td>
             <td style="padding:8px 10px;color:var(--green)">✓</td><td style="padding:8px 10px;color:var(--red)">✗ carries raw rice; plate ends [rice, rice]</td></tr>
         <tr><td style="padding:8px 10px">hardest</td><td style="padding:8px 10px">Deluxe Burger <span class="vtag">4 ordered, 1 board</span></td><td style="padding:8px 10px">bun → patty → chopped lettuce → chopped tomato</td>
@@ -301,8 +302,10 @@
     <div class="grid2">
       <figure class="videowrap">
         <video controls muted loop playsinline preload="none" src="assets/stream/ladder_hard_cheeseburger.mp4"></video>
-        <figcaption><b style="color:var(--red)">hard · Cheeseburger ✗</b> — it fries the patty and gathers all three
-          components, but stacks them <b>bun → cheese → patty</b>. The ordered recipe rejects the plate at the pass.</figcaption>
+        <figcaption><b style="color:var(--green)">hard · Cheeseburger ✓ +34</b> — a typical run: it mis-times 4 early
+          commands (e.g. <code>put down</code> before reaching the pan, <code>scoop</code> before holding a plate — these are
+          <b>dropped</b>), notices nothing happened, retries correctly, and assembles bun → patty → cheese in order.
+          See the disposition audit below.</figcaption>
       </figure>
       <figure class="videowrap">
         <video controls muted loop playsinline preload="none" src="assets/stream/ladder_harder_friedrice.mp4"></video>
@@ -314,8 +317,44 @@
       <video controls muted loop playsinline preload="none" src="assets/stream/ladder_hardest_deluxe.mp4"></video>
       <figcaption><b style="color:var(--red)">hardest · Deluxe Burger ✗</b> — four ordered components on a single board.
         With no on-screen memory of its progress, it repeatedly re-scoops the bun source and ends holding a
-        <b>plate of three buns</b>. The cliff is steep: instance-grounding is solved, ordered long-horizon assembly is not.</figcaption>
+        <b>plate of three buns</b>. The gradient is clear: instance-grounding is solved, a 3-step burger is usually solved,
+        but 3-tool / 4-component ordered assembly is not.</figcaption>
     </figure>
+
+    <!-- ===== dropped-command audit ===== -->
+    <h3 id="dispositions" style="margin-top:40px;font-size:22px">Which commands get dropped — and whose fault?</h3>
+    <p class="muted">A manipulation only fires when the cook is <b>standing at and facing</b> the right tile; the sliding-window
+      agent <b>drops</b> one issued out of position (the Gemini Live agent instead <b>queues</b> it). Instrumenting three
+      Cheeseburger runs (gemini-3.1-pro-preview), <b>72 commands were issued, 62 executed, 10 were dropped</b> as illegal —
+      a representative run drops 4 then recovers. Every dropped command and its engine reason:</p>
+    <table style="width:100%;border-collapse:collapse;margin:14px 0;font-size:14.5px">
+      <thead><tr style="text-align:left;border-bottom:2px solid var(--line)">
+        <th style="padding:7px 9px">×</th><th style="padding:7px 9px">command</th><th style="padding:7px 9px">engine reason it was rejected</th>
+        <th style="padding:7px 9px">root cause</th></tr></thead>
+      <tbody>
+        <tr style="border-bottom:1px solid var(--line)"><td style="padding:7px 9px">3</td><td style="padding:7px 9px"><code>put down</code></td><td style="padding:7px 9px">"can't put that down here — face a counter or an open pan" (still walking to the pan)</td><td style="padding:7px 9px;color:var(--accent)">VLM timing — issued a beat before arrival</td></tr>
+        <tr style="border-bottom:1px solid var(--line)"><td style="padding:7px 9px">1</td><td style="padding:7px 9px"><code>scoop</code></td><td style="padding:7px 9px">"nothing ready to scoop here — face a done station / chopped board / source" (not yet arrived)</td><td style="padding:7px 9px;color:var(--accent)">VLM timing — issued a beat before arrival</td></tr>
+        <tr style="border-bottom:1px solid var(--line)"><td style="padding:7px 9px">2</td><td style="padding:7px 9px"><code>turn on</code></td><td style="padding:7px 9px">"nothing to start — the station is empty"</td><td style="padding:7px 9px;color:var(--red)">VLM cascade — assumed the dropped <code>put down</code> had worked</td></tr>
+        <tr style="border-bottom:1px solid var(--line)"><td style="padding:7px 9px">2</td><td style="padding:7px 9px"><code>pick up</code></td><td style="padding:7px 9px">"your hands are full"</td><td style="padding:7px 9px;color:var(--red)">VLM state-tracking — it was already holding the meat (visible in-frame)</td></tr>
+        <tr><td style="padding:7px 9px">2</td><td style="padding:7px 9px"><code>scoop</code></td><td style="padding:7px 9px">"hold a clean plate to scoop onto"</td><td style="padding:7px 9px;color:var(--red)">VLM sequencing — tried to plate before fetching a plate</td></tr>
+      </tbody>
+    </table>
+    <div class="callout"><b>Spec ambiguity vs VLM fault.</b> <b>0 of 10</b> drops come from an unclear task or action spec — every
+      rejection maps to a precondition stated verbatim in the system prompt ("a manipulation only works while standing at and
+      FACING the right tile — go to it first", "HOLD a plate and scoop", "say <i>continue</i> until you SEE it has arrived")
+      and the engine's error messages are precise. The split is:
+      <ul style="margin:8px 0 0 0">
+        <li><b style="color:var(--accent)">≈40% timing slips</b> (the <code>put down</code> / <code>scoop</code> issued one
+          decision early). These are <i>soft</i>: the model judged "I've arrived" a beat too soon. Under the Live agent's
+          <b>intent-queuing</b> they would simply fire on arrival instead of being dropped — so they're as much an
+          <b>agent-policy choice</b> (drop vs queue) as a model error.</li>
+        <li><b style="color:var(--red)">≈60% genuine VLM reasoning errors</b> — a <code>pick up</code> with full hands or a
+          <code>scoop</code> with no plate is a state-tracking / planning mistake the picture already disproves; the
+          <code>turn on</code> failures are cascades from acting as if a dropped command had succeeded.</li>
+      </ul>
+      Net: the spec is clear; the drops are the model's, but the sliding-window <i>drop</i> policy converts forgivable
+      timing slips into wasted turns (and occasional cascades). It still usually recovers on the Cheeseburger; on the longer
+      tasks the same slips compound past recovery.</div>
 
     <!-- ===== detailed task specs ===== -->
     <h3 id="taskspec" style="margin-top:40px;font-size:22px">Task specifications — recipe, ground-truth steps, mechanics</h3>
