@@ -427,9 +427,24 @@ first. To plate cooked food, HOLD a plate and "scoop" (don't "pick up"). The coo
 takes several frames to arrive — say "continue" until you SEE it has clearly arrived. Keep replies to a few words.
 IMPORTANT: only say "continue" while the cook is actively walking or food is cooking. If the cook is standing
 still with nothing in progress, do NOT say continue — say the NEXT command to make progress toward the dish
-(plan: get a plate -&gt; go to the onion pot -&gt; scoop -&gt; go to the serving pass -&gt; serve).
+(plan: get a plate -&gt; go to the onion pot -&gt; scoop -&gt; go to the serving pass -&gt; serve).</pre>
+    <p class="muted" style="font-size:14px;margin:10px 0 4px">The recipe is given to the model right here: the full system
+      instruction is literally <code>sys_inst = SYS + "\n\n" + recipe</code> — the block above, followed by <b>one</b> of these
+      task recipe lines, <b>verbatim</b> (this is the only thing that changes between tasks):</p>
+    <pre style="background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;overflow-x:auto;white-space:pre-wrap;font-size:13px;line-height:1.55"><b style="color:var(--accent)"># hard</b>
+RECIPE — Cheeseburger (build the plate in THIS EXACT ORDER): (1) a BUN (raw, from the bun source), then (2) a FRIED PATTY — cook a piece of meat in the PAN first, then (3) CHEESE (raw). To put each item on the plate, HOLD the plate and 'scoop' at the bun source / the done pan / the cheese source. Add them bun -&gt; patty -&gt; cheese, then serve.
 
-[+ the task's RECIPE — … line from above]</pre>
+<b style="color:var(--accent)"># harder</b>
+RECIPE — Fried Rice (build the plate in THIS EXACT ORDER, three different cooking tools): (1) COOKED RICE — cook rice in a POT; (2) a FRIED EGG — cook an egg in the PAN; (3) CHOPPED ONION — chop an onion on the BOARD. Then hold a plate and scoop them onto it in the order rice -&gt; egg -&gt; onion, and serve. (There are two pots and two boards — any will do.)
+
+<b style="color:var(--accent)"># hardest</b>
+RECIPE — Deluxe Burger (build the plate in THIS EXACT ORDER, four components): (1) BUN (raw); (2) FRIED PATTY (cook meat in the PAN); (3) CHOPPED LETTUCE (chop on the BOARD); (4) CHOPPED TOMATO (chop on the BOARD). There is ONE board, so chop lettuce first, scoop it onto the plate, then chop the tomato. Add bun -&gt; patty -&gt; lettuce -&gt; tomato in order, then serve.
+
+<b style="color:var(--accent)"># (and the base instance task)</b>
+RECIPE — Onion Soup: a plate with 3 cooked ONIONS. Two pots are cooking; only ONE has onions (yellow) — the other has tomatoes (red). Plate the ONION soup and serve.</pre>
+    <p class="muted" style="font-size:14px;margin-top:10px"><b>Offline sliding-window agent:</b> the recipe is given the same way but,
+      because each <code>generate_content</code> call is stateless, it is <b>prepended to every per-frame message</b>
+      (<code>f"{recipe}\n\nYour last 5 actions…"</code> + the last 5 frames) rather than set once as a session system instruction.</p>
 
     <p style="margin:14px 0 4px"><b>② Per-frame streaming prompt</b> (every tick, after streaming the RGB frame via <code>send_realtime_input(video=…)</code>):</p>
     <pre style="background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;overflow-x:auto;white-space:pre-wrap;font-size:13px;line-height:1.5">Next action?</pre>
