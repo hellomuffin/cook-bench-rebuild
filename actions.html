@@ -316,6 +316,127 @@
         With no on-screen memory of its progress, it repeatedly re-scoops the bun source and ends holding a
         <b>plate of three buns</b>. The cliff is steep: instance-grounding is solved, ordered long-horizon assembly is not.</figcaption>
     </figure>
+
+    <!-- ===== detailed task specs ===== -->
+    <h3 id="taskspec" style="margin-top:40px;font-size:22px">Task specifications — recipe, ground-truth steps, mechanics</h3>
+    <p class="muted">Each task gives the model the recipe text below (appended to the system prompt). Burning is disabled
+      (<code>pot/pan/oven_burn_time = 10⁹</code>) so a cooked item can wait — the test is the reasoning, not a timer race.
+      Engine constants used below: <b>pot</b> cap 3 / cook 20t · <b>pan</b> cap 2 / cook 15t · <b>oven</b> cap 3 / cook 28t ·
+      <b>cutting board</b> 4 chop-interactions · a cooking station starts when full, or by an empty-handed <code>turn on</code> ·
+      to plate cooked/chopped food you <b>hold a plate and <code>scoop</code></b> at the done station.</p>
+
+    <div class="callout" style="border-left:3px solid var(--accent)">
+      <b>🍔 hard · Cheeseburger</b> &nbsp;<span class="vtag">layout: burger_bar</span> <span class="vtag">3 components, ordered</span> <span class="vtag">reward +34</span><br>
+      <b>Recipe prompt given to the model:</b> <i>"RECIPE — Cheeseburger (build the plate in THIS EXACT ORDER): (1) a BUN
+      (raw, from the bun source), then (2) a FRIED PATTY — cook a piece of meat in the PAN first, then (3) CHEESE (raw).
+      To put each item on the plate, HOLD the plate and 'scoop' at the bun source / the done pan / the cheese source.
+      Add them bun -&gt; patty -&gt; cheese, then serve."</i>
+      <b style="display:block;margin-top:8px">Ground-truth steps:</b>
+      <ol style="margin:4px 0 0 0">
+        <li>go to the <b>meat source</b> → <code>pick up</code> raw meat</li>
+        <li>go to a <b>pan</b> → <code>put down</code> the meat → <code>turn on</code> (fries in 15t; can wait)</li>
+        <li>go to <b>the plates</b> → <code>pick up</code> a clean plate</li>
+        <li>go to the <b>bun source</b> → <code>scoop</code> → plate = [bun·raw]</li>
+        <li>go to the <b>pan</b> (patty done) → <code>scoop</code> → plate = [bun, meat·cooked]</li>
+        <li>go to the <b>cheese source</b> → <code>scoop</code> → plate = [bun, meat·cooked, cheese·raw]</li>
+        <li>go to the <b>serving pass</b> → <code>serve</code> → matches Cheeseburger → <b style="color:var(--green)">+34</b></li>
+      </ol>
+    </div>
+
+    <div class="callout" style="border-left:3px solid var(--accent)">
+      <b>🍚 harder · Fried Rice</b> &nbsp;<span class="vtag">layout: grand_kitchen</span> <span class="vtag">3 tools, ordered</span> <span class="vtag">reward +44</span><br>
+      <b>Recipe prompt given to the model:</b> <i>"RECIPE — Fried Rice (build the plate in THIS EXACT ORDER, three different
+      cooking tools): (1) COOKED RICE — cook rice in a POT; (2) a FRIED EGG — cook an egg in the PAN; (3) CHOPPED ONION —
+      chop an onion on the BOARD. Then hold a plate and scoop them onto it in the order rice -&gt; egg -&gt; onion, and serve.
+      (There are two pots and two boards — any will do.)"</i>
+      <b style="display:block;margin-top:8px">Ground-truth steps:</b>
+      <ol style="margin:4px 0 0 0">
+        <li>rice source → <code>pick up</code>; a <b>pot</b> → <code>put down</code> → <code>turn on</code> (cooks 20t)</li>
+        <li>egg source → <code>pick up</code>; a <b>pan</b> → <code>put down</code> → <code>turn on</code> (fries 15t)</li>
+        <li>onion source → <code>pick up</code>; a <b>cutting board</b> → <code>put down</code> → <code>chop</code> ×4</li>
+        <li>go to <b>the plates</b> → <code>pick up</code> a clean plate</li>
+        <li><b>pot</b> → <code>scoop</code> → [rice·cooked] · <b>pan</b> → <code>scoop</code> → [rice, egg·cooked] · <b>board</b> → <code>scoop</code> → [rice, egg, onion·chopped]</li>
+        <li>go to the <b>serving pass</b> → <code>serve</code> → matches Fried Rice → <b style="color:var(--green)">+44</b></li>
+      </ol>
+    </div>
+
+    <div class="callout" style="border-left:3px solid var(--accent)">
+      <b>🍔 hardest · Deluxe Burger</b> &nbsp;<span class="vtag">layout: diner</span> <span class="vtag">4 components, ordered, ONE board</span> <span class="vtag">reward +46</span><br>
+      <b>Recipe prompt given to the model:</b> <i>"RECIPE — Deluxe Burger (build the plate in THIS EXACT ORDER, four
+      components): (1) BUN (raw); (2) FRIED PATTY (cook meat in the PAN); (3) CHOPPED LETTUCE (chop on the BOARD); (4)
+      CHOPPED TOMATO (chop on the BOARD). There is ONE board, so chop lettuce first, scoop it onto the plate, then chop
+      the tomato. Add bun -&gt; patty -&gt; lettuce -&gt; tomato in order, then serve."</i>
+      <b style="display:block;margin-top:8px">Ground-truth steps</b> (the single board forces the interleaving):
+      <ol style="margin:4px 0 0 0">
+        <li>meat → <code>pick up</code>; <b>pan</b> → <code>put down</code> → <code>turn on</code> (patty cooks 15t)</li>
+        <li>lettuce → <code>pick up</code>; <b>board</b> → <code>put down</code> → <code>chop</code> ×4</li>
+        <li><b>the plates</b> → <code>pick up</code> a clean plate</li>
+        <li>bun source → <code>scoop</code> → [bun] · <b>pan</b> → <code>scoop</code> → [bun, meat·cooked] · <b>board</b> → <code>scoop</code> → [bun, meat, lettuce·chopped] <i>(board now free)</i></li>
+        <li><code>put down</code> the plate on a counter; tomato → <code>pick up</code>; <b>board</b> → <code>put down</code> → <code>chop</code> ×4</li>
+        <li><code>pick up</code> the plate again; <b>board</b> → <code>scoop</code> → [bun, meat, lettuce, tomato·chopped]</li>
+        <li>go to the <b>serving pass</b> → <code>serve</code> → matches Deluxe Burger → <b style="color:var(--green)">+46</b></li>
+      </ol>
+    </div>
+
+    <!-- ===== success evaluation ===== -->
+    <h3 style="margin-top:34px;font-size:22px">How success is evaluated</h3>
+    <p class="muted">There is no "deliver" verb — a dish is judged only at the moment you <code>serve</code> while standing at
+      the serving pass (<code>KitchenGame._interact_serving</code>):</p>
+    <ol class="muted">
+      <li>You must be holding a <b>clean, non-empty plate</b> (a dirty plate or empty hands does nothing).</li>
+      <li><code>RecipeBook.match_plate</code> checks the plate against the menu: its <b>multiset</b> of (ingredient, state)
+        must equal a recipe's, and because these are <b>ordered</b> recipes it additionally requires the plate's
+        <b>addition sequence</b> (<code>plate.content_seq</code>) to <b>exactly equal</b> the recipe's component order. Any
+        <b>burnt</b> item disqualifies it (not possible here — burning is off).</li>
+      <li>If it matches an <b>open order</b>, you get the recipe's <code>base_reward</code> (34 / 44 / 46),
+        <code>deliveries += 1</code>, and the plate is returned. <b>That is the only success signal we score.</b></li>
+      <li>Any mismatch — wrong items, missing/extra component, or <b>right items in the wrong order</b> — is a
+        <b>failed delivery</b>: the food is discarded, the plate is dirtied, and you take
+        <code>invalid_serve_penalty = −3</code>. (This is exactly how the cheeseburger run scored −1→fail: it plated
+        bun → cheese → patty, the wrong order, so the ordered recipe rejected it.)</li>
+    </ol>
+
+    <!-- ===== gemini live prompting ===== -->
+    <h3 style="margin-top:34px;font-size:22px">How we prompt Gemini Live</h3>
+    <p class="muted">Gemini Live is a stateful, audio-native bidi session and is <b>not proactive</b> — it only speaks when
+      prompted. So all the context goes in the <b>system instruction once</b>, then <b>every frame</b> we stream the rendered
+      RGB image and send a tiny text ping; the model <b>speaks</b> one short command (or "continue"), which we transcribe
+      (<code>output_audio_transcription</code>) and parse. The session keeps its <b>own internal memory</b> of past
+      frames + replies (<code>context_window_compression = sliding_window</code>), so we never resend history.</p>
+
+    <p style="margin-bottom:4px"><b>① Initial system instruction</b> (sent once at session open; the recipe text above is appended verbatim):</p>
+    <pre style="background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;overflow-x:auto;white-space:pre-wrap;font-size:13px;line-height:1.5">You are a STREAMING controller for one cook in a 3D top-down cooking game. You watch a live video and
+I will ask you, frame by frame, for the next action. Read everything from the picture: where the cook is (the
+blue chef), which way it faces, what it holds (a white plate, with food on it once filled), what is inside each
+pot/pan, and whether food is still cooking vs done.
+
+EACH TIME I ask, reply by SAYING exactly ONE short thing and nothing else:
+- say "continue" = NO-OP / no interrupt: keep doing the current thing (use this while the cook is still walking,
+  or while food is still cooking; you judge from the video whether the last command has finished).
+- OR say one command.
+
+INSTANCE / SPATIAL GROUNDING — IMPORTANT: when several of an object exist (two pots) they may hold DIFFERENT
+food. LOOK to see which has what you need (yellow onions vs red tomatoes) and name THAT one: "the pot with the
+onions", "the left pot", "the right pot". Choosing the wrong instance ruins the dish.
+
+COMMANDS: "go to &lt;object&gt;" (the only move; + the instance qualifiers; objects: an ingredient source, a pot /
+pan / cutting board / sink, "the plates", "the serving pass") · "pick up" · "put down" · "chop" · "turn on" ·
+"scoop" (hold a plate, add the faced station's food onto it) · "serve".
+RULES: a manipulation only works while standing at and FACING the right tile, else nothing happens — go to it
+first. To plate cooked food, HOLD a plate and "scoop" (don't "pick up"). The cook moves one tile per frame and
+takes several frames to arrive — say "continue" until you SEE it has clearly arrived. Keep replies to a few words.
+IMPORTANT: only say "continue" while the cook is actively walking or food is cooking. If the cook is standing
+still with nothing in progress, do NOT say continue — say the NEXT command to make progress toward the dish
+(plan: get a plate -&gt; go to the onion pot -&gt; scoop -&gt; go to the serving pass -&gt; serve).
+
+[+ the task's RECIPE — … line from above]</pre>
+
+    <p style="margin:14px 0 4px"><b>② Per-frame streaming prompt</b> (every tick, after streaming the RGB frame via <code>send_realtime_input(video=…)</code>):</p>
+    <pre style="background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;overflow-x:auto;white-space:pre-wrap;font-size:13px;line-height:1.5">Next action?</pre>
+    <p class="muted" style="font-size:14px">That two-word ping is the whole per-frame message — everything else (the rules, the
+      recipe, the running history of frames and its own past replies) is already in the system instruction and the session's
+      internal memory. We read back the spoken reply, map "continue"/"wait"/… to a no-op, otherwise parse the one command;
+      a manipulation said before the cook is in position is <b>queued</b> and auto-fires on arrival (intent-queuing).</p>
   </div>
 </section>
 
