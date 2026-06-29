@@ -1,0 +1,111 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>CookSim — The actual prompts</title>
+<style>
+:root{--bg:#15121b;--card:#241e2e;--ink:#f4eee7;--muted:#b6abc2;--line:#3a3247;--accent:#ffb454;--green:#5fcf94;--blue:#5aa9e6;--code:#1a1622;}
+*{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink);line-height:1.6}
+a{color:var(--accent)}code{font-family:"SF Mono",Menlo,Consolas,monospace;background:var(--code);padding:1px 5px;border-radius:5px}
+nav{position:sticky;top:0;z-index:20;background:rgba(21,18,27,.9);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);display:flex;gap:18px;padding:12px 24px;flex-wrap:wrap}
+nav a{color:var(--muted);text-decoration:none;font-size:14px;font-weight:600}nav a:hover{color:var(--ink)}
+.wrap{max-width:1000px;margin:0 auto;padding:0 24px}h1{font-size:32px;margin:26px 0 6px}h2{font-size:23px;margin:34px 0 6px;border-bottom:1px solid var(--line);padding-bottom:6px}
+.muted{color:var(--muted)}.small{font-size:13px;color:var(--muted)}.kicker{color:var(--accent);font-weight:800;letter-spacing:2px;text-transform:uppercase;font-size:12px;margin-top:22px}
+.pl{font-size:12px;font-weight:800;color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin:16px 0 4px}
+pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;overflow:auto;white-space:pre-wrap;font-size:12.5px;line-height:1.55;font-family:"SF Mono",Menlo,Consolas,monospace}
+pre.p1{border-left:3px solid var(--blue)}pre.p2{border-left:3px solid var(--green);font-size:12px}pre.reply{border-left:3px solid var(--accent);color:var(--accent)}
+.cnd{margin:8px 0}.cnd b{font-size:13px}
+.tag{display:inline-block;background:var(--card);border:1px solid var(--line);border-radius:20px;padding:3px 12px;font-size:12px;margin-right:6px}
+.callout{background:var(--card);border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:10px;padding:14px 16px;margin:16px 0;font-size:14px}
+</style></head><body>
+<nav><div style="font-weight:800">🍳 CookSim</div><a href="index.html">← Home</a><a href="controller.html">📊 Controller</a><a href="human.html">🧑&zwj;🍳 Human monitoring</a><a href="grid.html">▦ Tasks</a></nav>
+<header class="wrap"><div class="kicker">Prompts</div><h1>The exact prompts</h1>
+<p class="muted">Both modes feed the model <b>pure rendered pixels</b> plus text. These are pulled straight from the
+code, so they match what actually runs. The recipe example below is the Cheeseburger task.</p>
+<p><span class="tag">🎮 Controller — VLM drives</span><span class="tag">👁️ Supervisor — VLM watches</span></p></header>
+
+<section class="wrap"><h2>🎮 Controller mode — the VLM issues every command</h2><p class="small">Once per second the model gets the last 5 RGB frames + its command history and replies with one action.</p><div class="pl">System prompt (sent every call)</div><pre class="p1">You are a STREAMING controller for one cook in a 3D top-down cooking game. About once per second you
+receive the LAST FEW video frames (oldest -&gt; newest) so you can see MOTION, plus the recent actions you issued.
+You output ONE action for now.
+
+Read everything from the frames: where the cook is (blue chef), which way it faces, what it holds (a white plate,
+with food on it once filled), what is inside each pot/pan/board, and whether food is still cooking vs done.
+Use the sequence of frames to judge whether your last command has FINISHED (e.g. the cook has stopped moving and
+is now standing next to the target).
+
+OUTPUT strict JSON: {&quot;action&quot;: &quot;&lt;command or empty string&gt;&quot;, &quot;reason&quot;: &quot;&lt;short, state what you SEE&gt;&quot;}
+- action = &quot;&quot; (empty)  -&gt; NO-OP: keep doing the current thing. Use this while the cook is still walking to its
+  target, or while food is still cooking.
+- action = a command   -&gt; change what the cook is doing.
+
+INSTANCE / SPATIAL GROUNDING — IMPORTANT: when several of an object exist (e.g. two pots) they may hold DIFFERENT
+food. LOOK at the frames to see which one has what you need (yellow onions vs red tomatoes) and name THAT one:
+&quot;the pot with the onions&quot;, &quot;the left pot&quot;, &quot;the right pot&quot;, or &quot;pot 2&quot;. Wrong instance ruins the dish.
+
+COMMANDS: &quot;go to &lt;object&gt;&quot; (the only move; + the instance qualifiers above; objects: an ingredient source, a
+pot/pan/oven/cutting board/sink, &quot;the plates&quot;, &quot;the serving pass&quot;, &quot;the trash&quot;) · &quot;pick up&quot; · &quot;put down&quot; ·
+&quot;chop&quot; · &quot;turn on&quot; · &quot;scoop&quot; (hold a plate, add the faced station&#x27;s food onto it) · &quot;serve&quot;.
+RULES: a manipulation only works while standing at and FACING the right tile, else it does nothing — go to it
+first. To plate cooked/chopped food, HOLD a plate and &quot;scoop&quot; (don&#x27;t &quot;pick up&quot;). The cook moves one tile per
+frame and takes several frames to arrive — reply &quot;&quot; (empty) until the frames show it has clearly arrived.</pre><div class="pl">Appended emphasis</div><pre class="p1">CRITICAL — ADD IN ORDER: the dish is accepted ONLY if its components are placed on the plate in the EXACT order the recipe lists. The right ingredients in the WRONG order are REJECTED (the plate is dirtied and you lose points). Plan your scoop order to match the recipe exactly.
+CRITICAL — ILLEGAL ACTIONS ARE IGNORED: any action whose precondition does not hold RIGHT NOW does NOTHING and wastes the turn — e.g. a manipulation when you are not standing at and FACING the right tile, &#x27;pick up&#x27; with full hands, &#x27;scoop&#x27; without holding a clean plate, &#x27;turn on&#x27; an empty station. Verify the precondition first.</pre><div class="pl">Input note — varies by condition (this is the only thing that changes across the 5 conditions)</div><div class="cnd"><b>basic — RGB only</b><pre class="p2">INPUT: the rendered 3D frame(s) of the kitchen — read everything you need from the pixels.</pre></div><div class="cnd"><b>graph_state — labelled state map</b><pre class="p2">INPUT: instead of a photo you receive a TOP-DOWN SCHEMATIC MAP of the kitchen. Every tile is labelled with its type and (for stations) its status (cooking / done / burnt) and an ID number; faint x,y coordinates are printed in each tile; the cook shows its number and a &#x27;hold:&#x27; label of what it carries. Read the labels directly — do not infer from photo-realism.</pre></div><div class="cnd"><b>agent+ — + per-step action log</b><pre class="p2">INPUT: the rendered 3D frame(s) of the kitchen — read everything you need from the pixels.</pre></div><div class="cnd"><b>agent++ — + per-step location</b><pre class="p2">INPUT: the rendered 3D frame(s) of the kitchen — read everything you need from the pixels.</pre></div><div class="cnd"><b>agent+++ — + plate contents text</b><pre class="p2">INPUT: the rendered 3D frame(s) of the kitchen — read everything you need from the pixels.</pre></div><div class="pl">Assembled user turn (example: agent+++ condition)</div><pre class="p1">RECIPE — Cheeseburger (build the plate in THIS EXACT ORDER): (1) bun (raw); (2) meat (cooked); (3) cheese (raw). Cook items that need cooking (pot/pan/oven), chop items that need chopping (board), then HOLD a plate and &#x27;scoop&#x27; each onto it in the order bun -&gt; meat -&gt; cheese, and serve.
+
+INPUT: the rendered 3D frame(s) of the kitchen — read everything you need from the pixels.
+
+COMMANDS YOU HAVE ISSUED SO FAR (most recent last):
+  1. go to the bun source
+  2. (empty / no-op)
+  3. scoop
+
+YOUR COOK — per-step log (action @ pos facing): move@(3,5) S | act@(3,4) S | ...
+CURRENT PLATE (components in addition order): [bun (raw), meat (cooked)]
+
+Below are your last 5 video frames, oldest first. Output one action JSON for NOW (use &quot;&quot; to keep doing the current thing).
+[5 PNG frames attached]</pre><div class="pl">Model reply (strict JSON)</div><pre class="reply">{&quot;action&quot;: &quot;go to the cheese source&quot;, &quot;reason&quot;: &quot;plate has bun+patty; cheese is next in the order&quot;}</pre></section>
+
+<section class="wrap"><h2>👁️ Supervisor mode — the VLM only watches & interrupts</h2><p class="small">The human cook runs the shared plan on its own. The model watches RGB and flags real deviations — but trusts a competent cook and honours announced changes.</p><div class="pl">System prompt</div><pre class="p1">You are SUPERVISING one cook in a 3D top-down cooking game. You and the cook BOTH already know the
+shared plan to make the dish; the cook executes it ON ITS OWN. You only WATCH the video — you do NOT drive it.
+
+DEFAULT TO TRUSTING THE COOK. It is skilled and knows the plan; the order it picks up ingredients can vary and is
+usually fine. Reply intervene=false unless you have CLEAR visual evidence of a real mistake. If you are merely
+unsure what it is doing, or just can&#x27;t see the order yet, do NOT interrupt. A false alarm is costly.
+INTERRUPT only when the cook clearly DEVIATES from correct execution:
+- goes to the WRONG station or the wrong one of two identical stations,
+- puts a RAW / uncooked / unchopped item on the plate (raw items are brightly coloured; cooked items are browned),
+- does steps OUT OF ORDER, or is about to SERVE an incomplete plate,
+- uses the WRONG ingredient or wrong amount,
+- or STALLS — stops making progress / stands idle when it should be acting.
+If the cook is simply slow but still doing the right thing, do NOT interrupt. Use the sequence of frames to judge
+direction and progress; catch a mistake from the TRAJECTORY before it commits when you can.
+
+THE HUMAN MAY TALK TO YOU. Sometimes a line &quot;&lt;human message&gt;: ...&quot; appears — that is the cook telling you something
+out loud. A real person ANNOUNCES their intentional changes and requests, but NEVER announces a mistake. So:
+- if the human ANNOUNCES a change (&quot;let&#x27;s also add a tomato&quot;, &quot;use the pan instead&quot;) that off-plan action is
+  INTENTIONAL — do NOT interrupt; accept it and treat the new plan as correct from now on.
+- if the human ASKS something (&quot;what&#x27;s next?&quot;), answer it in &quot;command&quot; and set intervene=false.
+- a deviation with NO message and no good reason is a real error — flag it.
+
+OUTPUT strict JSON: {&quot;intervene&quot;: true|false, &quot;type&quot;: &quot;&lt;one of: wrong_location, raw_on_plate, wrong_order,
+omission, premature_serve, wrong_ingredient, stall, none&gt;&quot;, &quot;command&quot;: &quot;&lt;short correction or answer, or empty&gt;&quot;}.</pre><div class="callout"><b>The human-message channel.</b> A real person announces intentional changes out loud but never announces a mistake. When the human deviates <i>on purpose</i> (e.g. adds an extra ingredient), a line <code>&lt;human message&gt;: ...</code> is injected into that turn so the model can tell an intentional change from an error. Mistakes carry no message — the model must catch those from the video alone.</div><div class="pl">Assembled user turn (example: human announces an add)</div><pre class="p1">The dish &amp; SHARED PLAN you both know:
+RECIPE — Cheeseburger (build the plate in THIS EXACT ORDER): (1) bun (raw); (2) meat (cooked); (3) cheese (raw). Cook items that need cooking (pot/pan/oven), chop items that need chopping (board), then HOLD a plate and &#x27;scoop&#x27; each onto it in the order bun -&gt; meat -&gt; cheese, and serve.
+Plan steps:
+  1. go to the meat source
+  2. pick up
+  3. go to the pan
+  4. put down
+  5. turn on
+  6. go to the plates
+  7. pick up
+  8. go to the bun source
+  9. scoop
+  10. go to the pan
+  11. scoop
+  12. go to the cheese source
+  13. scoop
+  14. go to the serving pass
+  15. serve
+
+&lt;human message&gt;: let&#x27;s also add a tomato to the plate — adding it on purpose.
+
+Below are the last 5 video frames (oldest first). Is the cook deviating RIGHT NOW? Output the JSON.
+[5 PNG frames attached]</pre><div class="pl">Model reply (strict JSON)</div><pre class="reply">{&quot;intervene&quot;: false, &quot;type&quot;: &quot;none&quot;, &quot;command&quot;: &quot;ok, adding the tomato — plan updated&quot;}</pre></section>
+<footer class="wrap" style="padding:30px 24px;color:var(--muted)">🍳 <b>CookSim</b> — prompts. <a href="controller.html">Controller results →</a> · <a href="human.html">Human monitoring →</a></footer>
+</body></html>
