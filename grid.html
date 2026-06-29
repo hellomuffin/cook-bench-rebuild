@@ -44,15 +44,15 @@ font-weight:800;color:var(--muted);font-size:13px;text-transform:uppercase;lette
   <code>map = 1·path + 6·grounding_ambiguity</code>
   — where <b>path</b> is the tiles the cook must walk (it already absorbs obstacle detours &amp; how far apart stations sit)
   and <b>grounding</b> is the number of duplicate look-alike stations to tell apart. Crucially, map is scaled
-  <b>without growing the grid past 10×10</b> (so instances stay legible): we add <b>obstacles</b>, <b>spread stations apart</b>,
+  <b>without growing the grid past 8×8</b> (so instances stay legible): we add <b>obstacles</b>, <b>spread stations apart</b>,
   and add <b>duplicate stations</b>. Each cell plays a <b>completion video</b> (a scripted solver finishing the dish) and lists
   the full ground-truth plan in the VLM action space.</p>
 </header>
 
 <section class="wrap">
   <h2>9 generated tasks — rows scale n_ops, columns scale map</h2>
-  <p class="muted">map column targets ≈ <b>20</b> / <b>44.0</b> / <b>75</b>.
-  The medium / medium cell is our Cheeseburger. Every kitchen is ≤10×10.</p>
+  <p class="muted">map column targets ≈ <b>28.2</b> / <b>51.0</b> / <b>73.8</b>.
+  The medium / medium cell is our Cheeseburger. Every kitchen is ≤8×8.</p>
   <div class="gridwrap">
     <div></div><div class="colhdr">easy&nbsp;map</div><div class="colhdr">medium&nbsp;map</div><div class="colhdr">hard&nbsp;map</div>
     <div class="rowhdr">easy n_ops</div><figure class="gcard">
@@ -60,8 +60,8 @@ font-weight:800;color:var(--muted);font-size:13px;text-transform:uppercase;lette
   <figcaption>
     <div class="gname">Caprese</div>
     <div class="gseq">tomato·chopped + cheese·raw</div>
-    <div class="cxrow"><span class="cx">n_ops <b>13</b> · <b style="color:var(--green)">easy</b></span><span class="cx">map <b>20.0</b> · <b style="color:var(--green)">easy</b></span></div>
-    <div class="feats">map 20.0 = 1·path(14) + 6·ground(1) &nbsp;· kitchen 12 floor tiles (≤10×10)</div>
+    <div class="cxrow"><span class="cx">n_ops <b>13</b> · <b style="color:var(--green)">easy</b></span><span class="cx">map <b>28.0</b> · <b style="color:var(--green)">easy</b></span></div>
+    <div class="feats">map 28.0 = 1·path(28) + 6·ground(0) &nbsp;· kitchen 13 floor tiles (≤8×8)</div>
     <details class="plan"><summary>ground-truth plan — 13 VLM commands</summary><ol><li>go to the tomato source</li><li>pick up</li><li>go to the cutting board</li><li>put down</li><li>chop</li><li>go to the plates</li><li>pick up</li><li>go to the cutting board</li><li>scoop</li><li>go to the cheese source</li><li>scoop</li><li>go to the serving pass</li><li>serve</li></ol></details>
   </figcaption>
 </figure><figure class="gcard">
@@ -69,80 +69,80 @@ font-weight:800;color:var(--muted);font-size:13px;text-transform:uppercase;lette
   <figcaption>
     <div class="gname">Caprese</div>
     <div class="gseq">tomato·chopped + cheese·raw</div>
-    <div class="cxrow"><span class="cx">n_ops <b>13</b> · <b style="color:var(--green)">easy</b></span><span class="cx">map <b>44.0</b> · <b style="color:var(--accent)">medium</b></span></div>
-    <div class="feats">map 44.0 = 1·path(26) + 6·ground(3) &nbsp;· kitchen 30 floor tiles (≤10×10)</div>
+    <div class="cxrow"><span class="cx">n_ops <b>13</b> · <b style="color:var(--green)">easy</b></span><span class="cx">map <b>51.0</b> · <b style="color:var(--accent)">medium</b></span></div>
+    <div class="feats">map 51.0 = 1·path(27) + 6·ground(4) &nbsp;· kitchen 16 floor tiles (≤8×8)</div>
     <details class="plan"><summary>ground-truth plan — 13 VLM commands</summary><ol><li>go to the tomato source</li><li>pick up</li><li>go to the cutting board</li><li>put down</li><li>chop</li><li>go to the plates</li><li>pick up</li><li>go to the cutting board</li><li>scoop</li><li>go to the cheese source</li><li>scoop</li><li>go to the serving pass</li><li>serve</li></ol></details>
   </figcaption>
 </figure><figure class="gcard">
   <video src="assets/grid/easy_nops_hard_map.mp4" poster="assets/grid/easy_nops_hard_map.jpg" muted loop playsinline controls preload="none"></video>
   <figcaption>
-    <div class="gname">Loaded Fries <span class="ord">ordered</span></div>
-    <div class="gseq">potato·cooked → cheese·raw</div>
-    <div class="cxrow"><span class="cx">n_ops <b>13</b> · <b style="color:var(--green)">easy</b></span><span class="cx">map <b>75.0</b> · <b style="color:var(--red)">hard</b></span></div>
-    <div class="feats">map 75.0 = 1·path(51) + 6·ground(4) &nbsp;· kitchen 48 floor tiles (≤10×10)</div>
-    <details class="plan"><summary>ground-truth plan — 13 VLM commands</summary><ol><li>go to the potato source</li><li>pick up</li><li>go to the pan</li><li>put down</li><li>turn on</li><li>go to the plates</li><li>pick up</li><li>go to the pan</li><li>scoop</li><li>go to the cheese source</li><li>scoop</li><li>go to the serving pass</li><li>serve</li></ol></details>
+    <div class="gname">Caprese</div>
+    <div class="gseq">tomato·chopped + cheese·raw</div>
+    <div class="cxrow"><span class="cx">n_ops <b>13</b> · <b style="color:var(--green)">easy</b></span><span class="cx">map <b>73.0</b> · <b style="color:var(--red)">hard</b></span></div>
+    <div class="feats">map 73.0 = 1·path(49) + 6·ground(4) &nbsp;· kitchen 22 floor tiles (≤8×8)</div>
+    <details class="plan"><summary>ground-truth plan — 13 VLM commands</summary><ol><li>go to the tomato source</li><li>pick up</li><li>go to the cutting board</li><li>put down</li><li>chop</li><li>go to the plates</li><li>pick up</li><li>go to the cutting board</li><li>scoop</li><li>go to the cheese source</li><li>scoop</li><li>go to the serving pass</li><li>serve</li></ol></details>
   </figcaption>
 </figure>
     <div class="rowhdr">medium n_ops</div><figure class="gcard">
   <video src="assets/grid/medium_nops_easy_map.mp4" poster="assets/grid/medium_nops_easy_map.jpg" muted loop playsinline controls preload="none"></video>
   <figcaption>
-    <div class="gname">Garden Salad</div>
-    <div class="gseq">lettuce·chopped + tomato·chopped</div>
-    <div class="cxrow"><span class="cx">n_ops <b>18</b> · <b style="color:var(--accent)">medium</b></span><span class="cx">map <b>20.0</b> · <b style="color:var(--green)">easy</b></span></div>
-    <div class="feats">map 20.0 = 1·path(14) + 6·ground(1) &nbsp;· kitchen 16 floor tiles (≤10×10)</div>
-    <details class="plan"><summary>ground-truth plan — 18 VLM commands</summary><ol><li>go to the lettuce source</li><li>pick up</li><li>go to the cutting board</li><li>put down</li><li>chop</li><li>go to the tomato source</li><li>pick up</li><li>go to the cutting board</li><li>put down</li><li>chop</li><li>go to the plates</li><li>pick up</li><li>go to the cutting board</li><li>scoop</li><li>go to the cutting board</li><li>scoop</li><li>go to the serving pass</li><li>serve</li></ol></details>
+    <div class="gname">Cheeseburger <span class="ord">ordered</span></div>
+    <div class="gseq">bun·raw → meat·cooked → cheese·raw</div>
+    <div class="cxrow"><span class="cx">n_ops <b>15</b> · <b style="color:var(--accent)">medium</b></span><span class="cx">map <b>28.0</b> · <b style="color:var(--green)">easy</b></span></div>
+    <div class="feats">map 28.0 = 1·path(28) + 6·ground(0) &nbsp;· kitchen 13 floor tiles (≤8×8)</div>
+    <details class="plan"><summary>ground-truth plan — 15 VLM commands</summary><ol><li>go to the meat source</li><li>pick up</li><li>go to the pan</li><li>put down</li><li>turn on</li><li>go to the plates</li><li>pick up</li><li>go to the bun source</li><li>scoop</li><li>go to the pan</li><li>scoop</li><li>go to the cheese source</li><li>scoop</li><li>go to the serving pass</li><li>serve</li></ol></details>
   </figcaption>
 </figure><figure class="gcard">
   <video src="assets/grid/medium_nops_medium_map.mp4" poster="assets/grid/medium_nops_medium_map.jpg" muted loop playsinline controls preload="none"></video>
   <figcaption>
     <div class="gname">Cheeseburger <span class="ord">ordered</span></div>
     <div class="gseq">bun·raw → meat·cooked → cheese·raw</div>
-    <div class="cxrow"><span class="cx">n_ops <b>15</b> · <b style="color:var(--accent)">medium</b></span><span class="cx">map <b>44.0</b> · <b style="color:var(--accent)">medium</b></span></div>
-    <div class="feats">map 44.0 = 1·path(20) + 6·ground(4) &nbsp;· kitchen 16 floor tiles (≤10×10)</div>
+    <div class="cxrow"><span class="cx">n_ops <b>15</b> · <b style="color:var(--accent)">medium</b></span><span class="cx">map <b>51.0</b> · <b style="color:var(--accent)">medium</b></span></div>
+    <div class="feats">map 51.0 = 1·path(39) + 6·ground(2) &nbsp;· kitchen 17 floor tiles (≤8×8)</div>
     <details class="plan"><summary>ground-truth plan — 15 VLM commands</summary><ol><li>go to the meat source</li><li>pick up</li><li>go to the pan</li><li>put down</li><li>turn on</li><li>go to the plates</li><li>pick up</li><li>go to the bun source</li><li>scoop</li><li>go to the pan</li><li>scoop</li><li>go to the cheese source</li><li>scoop</li><li>go to the serving pass</li><li>serve</li></ol></details>
   </figcaption>
 </figure><figure class="gcard">
   <video src="assets/grid/medium_nops_hard_map.mp4" poster="assets/grid/medium_nops_hard_map.jpg" muted loop playsinline controls preload="none"></video>
   <figcaption>
-    <div class="gname">Garden Salad</div>
-    <div class="gseq">lettuce·chopped + tomato·chopped</div>
-    <div class="cxrow"><span class="cx">n_ops <b>18</b> · <b style="color:var(--accent)">medium</b></span><span class="cx">map <b>75.0</b> · <b style="color:var(--red)">hard</b></span></div>
-    <div class="feats">map 75.0 = 1·path(51) + 6·ground(4) &nbsp;· kitchen 28 floor tiles (≤10×10)</div>
-    <details class="plan"><summary>ground-truth plan — 18 VLM commands</summary><ol><li>go to the lettuce source</li><li>pick up</li><li>go to the cutting board</li><li>put down</li><li>chop</li><li>go to the tomato source</li><li>pick up</li><li>go to the cutting board</li><li>put down</li><li>chop</li><li>go to the plates</li><li>pick up</li><li>go to the cutting board</li><li>scoop</li><li>go to the cutting board</li><li>scoop</li><li>go to the serving pass</li><li>serve</li></ol></details>
+    <div class="gname">Cheeseburger <span class="ord">ordered</span></div>
+    <div class="gseq">bun·raw → meat·cooked → cheese·raw</div>
+    <div class="cxrow"><span class="cx">n_ops <b>15</b> · <b style="color:var(--accent)">medium</b></span><span class="cx">map <b>74.0</b> · <b style="color:var(--red)">hard</b></span></div>
+    <div class="feats">map 74.0 = 1·path(50) + 6·ground(4) &nbsp;· kitchen 14 floor tiles (≤8×8)</div>
+    <details class="plan"><summary>ground-truth plan — 15 VLM commands</summary><ol><li>go to the meat source</li><li>pick up</li><li>go to the pan</li><li>put down</li><li>turn on</li><li>go to the plates</li><li>pick up</li><li>go to the bun source</li><li>scoop</li><li>go to the pan</li><li>scoop</li><li>go to the cheese source</li><li>scoop</li><li>go to the serving pass</li><li>serve</li></ol></details>
   </figcaption>
 </figure>
     <div class="rowhdr">hard n_ops</div><figure class="gcard">
   <video src="assets/grid/hard_nops_easy_map.mp4" poster="assets/grid/hard_nops_easy_map.jpg" muted loop playsinline controls preload="none"></video>
   <figcaption>
-    <div class="gname">Fried Rice <span class="ord">ordered</span></div>
-    <div class="gseq">rice·cooked → egg·cooked → onion·chopped</div>
-    <div class="cxrow"><span class="cx">n_ops <b>25</b> · <b style="color:var(--red)">hard</b></span><span class="cx">map <b>25.0</b> · <b style="color:var(--green)">easy</b></span></div>
-    <div class="feats">map 25.0 = 1·path(25) + 6·ground(0) &nbsp;· kitchen 28 floor tiles (≤10×10)</div>
-    <details class="plan"><summary>ground-truth plan — 25 VLM commands</summary><ol><li>go to the rice source</li><li>pick up</li><li>go to the pot</li><li>put down</li><li>turn on</li><li>go to the egg source</li><li>pick up</li><li>go to the pan</li><li>put down</li><li>turn on</li><li>go to the onion source</li><li>pick up</li><li>go to the cutting board</li><li>put down</li><li>chop</li><li>go to the plates</li><li>pick up</li><li>go to the pot</li><li>scoop</li><li>go to the pan</li><li>scoop</li><li>go to the cutting board</li><li>scoop</li><li>go to the serving pass</li><li>serve</li></ol></details>
+    <div class="gname">Pizza</div>
+    <div class="gseq">dough·cooked + tomato·cooked + cheese·cooked</div>
+    <div class="cxrow"><span class="cx">n_ops <b>25</b> · <b style="color:var(--red)">hard</b></span><span class="cx">map <b>28.0</b> · <b style="color:var(--green)">easy</b></span></div>
+    <div class="feats">map 28.0 = 1·path(16) + 6·ground(2) &nbsp;· kitchen 10 floor tiles (≤8×8)</div>
+    <details class="plan"><summary>ground-truth plan — 25 VLM commands</summary><ol><li>go to the dough source</li><li>pick up</li><li>go to the oven</li><li>put down</li><li>turn on</li><li>go to the tomato source</li><li>pick up</li><li>go to the pot</li><li>put down</li><li>turn on</li><li>go to the cheese source</li><li>pick up</li><li>go to the pot</li><li>put down</li><li>turn on</li><li>go to the plates</li><li>pick up</li><li>go to the oven</li><li>scoop</li><li>go to the pot</li><li>scoop</li><li>go to the pot</li><li>scoop</li><li>go to the serving pass</li><li>serve</li></ol></details>
   </figcaption>
 </figure><figure class="gcard">
   <video src="assets/grid/hard_nops_medium_map.mp4" poster="assets/grid/hard_nops_medium_map.jpg" muted loop playsinline controls preload="none"></video>
   <figcaption>
-    <div class="gname">Deluxe Burger <span class="ord">ordered</span></div>
-    <div class="gseq">bun·raw → meat·cooked → lettuce·chopped → tomato·chopped</div>
-    <div class="cxrow"><span class="cx">n_ops <b>27</b> · <b style="color:var(--red)">hard</b></span><span class="cx">map <b>44.0</b> · <b style="color:var(--accent)">medium</b></span></div>
-    <div class="feats">map 44.0 = 1·path(32) + 6·ground(2) &nbsp;· kitchen 16 floor tiles (≤10×10)</div>
-    <details class="plan"><summary>ground-truth plan — 27 VLM commands</summary><ol><li>go to the meat source</li><li>pick up</li><li>go to the pan</li><li>put down</li><li>turn on</li><li>go to the lettuce source</li><li>pick up</li><li>go to the cutting board</li><li>put down</li><li>chop</li><li>go to the tomato source</li><li>pick up</li><li>go to the cutting board</li><li>put down</li><li>chop</li><li>go to the plates</li><li>pick up</li><li>go to the bun source</li><li>scoop</li><li>go to the pan</li><li>scoop</li><li>go to the cutting board</li><li>scoop</li><li>go to the cutting board</li><li>scoop</li><li>go to the serving pass</li><li>serve</li></ol></details>
+    <div class="gname">Pizza</div>
+    <div class="gseq">dough·cooked + tomato·cooked + cheese·cooked</div>
+    <div class="cxrow"><span class="cx">n_ops <b>25</b> · <b style="color:var(--red)">hard</b></span><span class="cx">map <b>51.0</b> · <b style="color:var(--accent)">medium</b></span></div>
+    <div class="feats">map 51.0 = 1·path(45) + 6·ground(1) &nbsp;· kitchen 10 floor tiles (≤8×8)</div>
+    <details class="plan"><summary>ground-truth plan — 25 VLM commands</summary><ol><li>go to the dough source</li><li>pick up</li><li>go to the oven</li><li>put down</li><li>turn on</li><li>go to the tomato source</li><li>pick up</li><li>go to the pot</li><li>put down</li><li>turn on</li><li>go to the cheese source</li><li>pick up</li><li>go to the pot</li><li>put down</li><li>turn on</li><li>go to the plates</li><li>pick up</li><li>go to the oven</li><li>scoop</li><li>go to the pot</li><li>scoop</li><li>go to the pot</li><li>scoop</li><li>go to the serving pass</li><li>serve</li></ol></details>
   </figcaption>
 </figure><figure class="gcard">
   <video src="assets/grid/hard_nops_hard_map.mp4" poster="assets/grid/hard_nops_hard_map.jpg" muted loop playsinline controls preload="none"></video>
   <figcaption>
-    <div class="gname">Deluxe Burger <span class="ord">ordered</span></div>
-    <div class="gseq">bun·raw → meat·cooked → lettuce·chopped → tomato·chopped</div>
-    <div class="cxrow"><span class="cx">n_ops <b>27</b> · <b style="color:var(--red)">hard</b></span><span class="cx">map <b>75.0</b> · <b style="color:var(--red)">hard</b></span></div>
-    <div class="feats">map 75.0 = 1·path(57) + 6·ground(3) &nbsp;· kitchen 22 floor tiles (≤10×10)</div>
-    <details class="plan"><summary>ground-truth plan — 27 VLM commands</summary><ol><li>go to the meat source</li><li>pick up</li><li>go to the pan</li><li>put down</li><li>turn on</li><li>go to the lettuce source</li><li>pick up</li><li>go to the cutting board</li><li>put down</li><li>chop</li><li>go to the tomato source</li><li>pick up</li><li>go to the cutting board</li><li>put down</li><li>chop</li><li>go to the plates</li><li>pick up</li><li>go to the bun source</li><li>scoop</li><li>go to the pan</li><li>scoop</li><li>go to the cutting board</li><li>scoop</li><li>go to the cutting board</li><li>scoop</li><li>go to the serving pass</li><li>serve</li></ol></details>
+    <div class="gname">Pizza</div>
+    <div class="gseq">dough·cooked + tomato·cooked + cheese·cooked</div>
+    <div class="cxrow"><span class="cx">n_ops <b>25</b> · <b style="color:var(--red)">hard</b></span><span class="cx">map <b>74.0</b> · <b style="color:var(--red)">hard</b></span></div>
+    <div class="feats">map 74.0 = 1·path(50) + 6·ground(4) &nbsp;· kitchen 13 floor tiles (≤8×8)</div>
+    <details class="plan"><summary>ground-truth plan — 25 VLM commands</summary><ol><li>go to the dough source</li><li>pick up</li><li>go to the oven</li><li>put down</li><li>turn on</li><li>go to the tomato source</li><li>pick up</li><li>go to the pot</li><li>put down</li><li>turn on</li><li>go to the cheese source</li><li>pick up</li><li>go to the pot</li><li>put down</li><li>turn on</li><li>go to the plates</li><li>pick up</li><li>go to the oven</li><li>scoop</li><li>go to the pot</li><li>scoop</li><li>go to the pot</li><li>scoop</li><li>go to the serving pass</li><li>serve</li></ol></details>
   </figcaption>
 </figure>
   </div>
   <div class="callout"><b>How map scales here (look across a row).</b> Going easy→hard map, the kitchen does <b>not</b> get bigger —
-  it gets <b>harder to navigate &amp; read</b>: more obstacles and farther-apart stations push the <b>path</b> up, and extra
-  duplicate stations push the <b>grounding</b> term up. n_ops (the recipe) stays fixed down each column.</div>
+  it gets <b>harder to navigate &amp; read</b>: stations are scattered into the INTERIOR (functional islands — pans/boards/plates) and farther apart, pushing
+  <b>path</b> up, while extra duplicate stations push the <b>grounding</b> term up. n_ops (the recipe) stays fixed down each column.</div>
 </section>
 
 <footer class="wrap" style="padding:30px 24px;color:var(--muted)">🍳 <b>CookSim</b> — procedurally generated complexity. <a href="index.html">Home →</a></footer>
