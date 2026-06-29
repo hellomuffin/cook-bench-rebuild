@@ -1,84 +1,142 @@
 <!DOCTYPE html><html lang="en"><head>
 <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>CookSim — Human-agent monitoring (VLM supervisor)</title>
+<title>CookSim — Human-agent monitoring</title>
 <style>
 :root{--bg:#15121b;--card:#241e2e;--card2:#2c2536;--ink:#f4eee7;--muted:#b6abc2;--line:#3a3247;--accent:#ffb454;--green:#5fcf94;--blue:#5aa9e6;--red:#ff6a5a;--code:#1a1622;}
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink);line-height:1.65}
-a{color:var(--accent)}code{font-family:"SF Mono",Menlo,Consolas,monospace;background:var(--code);padding:1px 5px;border-radius:5px;font-size:13px}
+a{color:var(--accent)}code{font-family:"SF Mono",Menlo,Consolas,monospace;background:var(--code);padding:1px 6px;border-radius:5px;font-size:13px}
 nav{position:sticky;top:0;z-index:20;background:rgba(21,18,27,.9);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);display:flex;gap:18px;padding:12px 24px;flex-wrap:wrap}
 nav a{color:var(--muted);text-decoration:none;font-size:14px;font-weight:600}nav a:hover{color:var(--ink)}
-.wrap{max-width:1000px;margin:0 auto;padding:0 24px}h1{font-size:32px;margin:26px 0 8px}h2{font-size:22px;margin:32px 0 8px}h3{font-size:16px;margin:18px 0 4px}
+.wrap{max-width:1000px;margin:0 auto;padding:0 24px}h1{font-size:32px;margin:26px 0 8px}h2{font-size:23px;margin:34px 0 8px}h3{font-size:17px;margin:0}
 .muted{color:var(--muted)}.small{font-size:13px;color:var(--muted)}.kicker{color:var(--accent);font-weight:800;letter-spacing:2px;text-transform:uppercase;font-size:12px;margin-top:22px}
 .callout{background:var(--card);border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:10px;padding:14px 16px;margin:16px 0}
-.cols{display:grid;grid-template-columns:1fr 1fr;gap:18px}@media(max-width:760px){.cols{grid-template-columns:1fr}}
-.tax{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 16px}
-.tax b{color:var(--ink)}.tax li{margin:3px 0}
-.epgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:12px 0}@media(max-width:760px){.epgrid{grid-template-columns:1fr}}
-.ep{margin:0}.ep video{width:100%;border-radius:10px;border:1px solid var(--line);background:#0c0a12;aspect-ratio:1180/540;object-fit:cover}.ep figcaption{font-size:12.5px;color:var(--muted);margin-top:6px}
+.steps{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:6px 20px;margin:14px 0}
+.chan{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:14px 0}@media(max-width:760px){.chan{grid-template-columns:1fr}}
+.chan>div{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 18px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:0;margin:18px 0;overflow:hidden}
+.ch{padding:14px 18px 4px}.badge{display:inline-block;border:1px solid;border-radius:20px;padding:2px 12px;font-size:11.5px;font-weight:800;letter-spacing:.5px;margin-bottom:8px}
+.cb{display:grid;grid-template-columns:440px 1fr;gap:18px;padding:8px 18px 18px}@media(max-width:820px){.cb{grid-template-columns:1fr}}
+.cv video{width:100%;border-radius:10px;border:1px solid var(--line);background:#0c0a12;aspect-ratio:1180/540;object-fit:cover}
+.novid{aspect-ratio:1180/540;display:flex;align-items:center;justify-content:center;color:var(--muted);background:#0c0a12;border-radius:10px;border:1px dashed var(--line)}
+.ct{display:flex;flex-direction:column;justify-content:center}
+.gt{margin:5px 0;font-size:14.5px}.gl{display:inline-block;font-weight:800;font-size:11px;border-radius:5px;padding:1px 7px;margin-right:8px;vertical-align:middle}
+.gl.ok{background:rgba(95,207,148,.18);color:var(--green)}.gl.bad{background:rgba(255,106,90,.18);color:var(--red)}
+.res{margin-top:12px;padding-top:10px;border-top:1px solid var(--line);font-size:14px}
 table{width:100%;border-collapse:collapse;margin:12px 0;font-size:14px}th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left}th{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:1px}
 td.g{color:var(--green);font-weight:700}td.r{color:var(--red);font-weight:700}
+.pl{font-size:12px;font-weight:800;color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin:16px 0 4px}
+pre.prompt{background:var(--code);border:1px solid var(--line);border-left:3px solid var(--blue);border-radius:10px;padding:14px 16px;overflow:auto;white-space:pre-wrap;font-size:12.5px;line-height:1.55;font-family:"SF Mono",Menlo,Consolas,monospace}
+pre.prompt.reply{border-left-color:var(--accent);color:var(--accent)}
 </style></head><body>
-<nav><div style="font-weight:800">🍳 CookSim</div><a href="index.html">← Home</a><a href="controller.html">📊 Controller</a><a href="grid.html">▦ Tasks</a></nav>
+<nav><div style="font-weight:800">🍳 CookSim</div><a href="index.html">← Home</a><a href="controller.html">📊 Controller</a><a href="prompts.html">📝 Prompts</a><a href="grid.html">▦ Tasks</a></nav>
 
-<header class="wrap">
-  <div class="kicker">Human-agent monitoring</div>
-  <h1>VLM as a pure-RGB supervisor</h1>
-  <p class="muted">A second paradigm. Instead of the VLM issuing every command, the <b>human cook executes a
-  shared plan on its own</b>, and the VLM <b>only watches the rendered RGB and interrupts when something goes
-  wrong</b>. It must <i>infer what the human did</i> (from state changes) and <i>predict what it's about to do</i>
-  (from the motion trajectory across recent frames). No verbal channel — pure pixels in, an interrupt decision out:
-  <code>{"intervene": bool, "type", "command"}</code>.</p>
-</header>
+<header class="wrap"><div class="kicker">Human-agent monitoring</div>
+<h1>VLM as a kitchen supervisor</h1>
+<p class="muted">A different job for the model. In the <a href="controller.html">controller</a> setting the VLM drives the
+cook. Here the <b>human cook already knows the recipe and cooks on its own</b> — the VLM just <b>watches</b> and
+speaks up only when something goes wrong. The point of this page is to make the <b>ground truth</b> unmistakable:
+what the cook is supposed to do, and exactly how each test bends it.</p></header>
 
 <section class="wrap">
-  <h2>Detection windows — why before-action matters</h2>
-  <p class="muted">Human moves are multi-tick, so an impending mistake is visible <b>before</b> it commits.</p>
-  <div class="cols">
-    <div class="tax"><b style="color:var(--green)">before-action</b> — caught while the cook is still <i>heading the
-    wrong way</i> / carrying a raw item toward the plate. Prevents the error; no recovery needed. It's the <b>only</b>
-    way to catch irreversible mistakes (served-wrong, trashed) and <b>wrong-order</b> (the plate renders as a pile, so
-    after the fact it looks fine — the only tell is the trajectory).</div>
-    <div class="tax"><b style="color:var(--accent)">after-action</b> — caught from the resulting state (raw item on the
-    plate, wrong colour in the pot, incomplete plate served). Triggers recovery.</div>
-  </div>
+<h2>The task & the shared plan</h2>
+<p class="muted">Both the cook and the supervisor know the same recipe up front — e.g. the Cheeseburger, whose plan is:</p>
+<div class="steps"><ol><li>get a clean plate</li><li>cook the meat patty in a pan</li><li>place the bun on the plate</li>
+<li>add the cooked patty</li><li>add the cheese</li><li>serve at the pass</li></ol></div>
+<p class="small">The cook runs this plan by itself (a scripted, reliable chef). On a normal run there is nothing to flag.
+Each test below injects ONE seeded, deterministic deviation with a known start/commit tick, so we can score the
+supervisor exactly.</p>
 </section>
 
 <section class="wrap">
-  <h2>Behavior taxonomy (all inferred from RGB)</h2>
-  <div class="cols">
-    <div class="tax"><b style="color:var(--red)">Errors — should be caught</b><ul>
-      <li>wrong_location / wrong_instance (grounding)</li><li>skip_prep — raw item on plate</li>
-      <li>wrong_order · omission · premature_serve</li><li>wrong_ingredient · wrong_quantity · redundant · misplace</li>
-      <li>stall — idles (covers <i>ignore</i> after a command, and <i>forget</i> at a decision point)</li></ul></div>
-    <div class="tax"><b style="color:var(--green)">Legitimate change — must NOT flag</b><ul>
-      <li>add_ingredient (e.g. 2nd tomato; success target updates)</li><li>substitute one component for another</li></ul>
-      <b style="color:var(--blue)">Requests — must answer</b><ul><li>forget → tell it the next step</li></ul>
-      <b style="color:var(--accent)">Distractor — false-positive control</b><ul><li>dawdle — slow but correct → wait, don't interrupt</li></ul></div>
-  </div>
+<h2>Two things the supervisor can see</h2>
+<div class="chan">
+  <div><b>① The video (pixels)</b><p class="small" style="margin:6px 0 0">The rendered 3D kitchen — where the cook is,
+  what it holds, what's cooking. <b>Mistakes are silent</b>: a real person doesn't announce an error, so the supervisor
+  must catch those from the video alone — ideally from the trajectory <i>before</i> the mistake commits.</p></div>
+  <div><b>② The human-message channel</b><p class="small" style="margin:6px 0 0">A real person DOES announce intentional
+  changes and questions out loud. When the cook changes the plan on purpose, a line
+  <code>&lt;human message&gt;: ...</code> is added to that turn. So an <i>announced</i> off-plan action is intentional —
+  the supervisor must accept it, not flag it.</p></div>
+</div>
+<div class="callout"><b>Why this matters.</b> Earlier the supervisor over-flagged the legitimate "add an extra ingredient"
+case — because nothing told it the change was intentional. Adding the message channel (and telling the model to trust a
+competent cook) is exactly the fix: errors stay silent and must be caught from pixels; intentional changes are spoken.</div>
 </section>
 
 <section class="wrap">
-  <h2>The deviations (NoisyHuman)</h2>
-  <p class="small">A scripted cook executes the shared plan via the engine's planner, then injects a <b>seeded,
-  deterministic</b> deviation with ground-truth start/commit ticks. Left = the 3D frame; right = a human-only HUD
-  showing the active deviation and its before-action window.</p>
-  <div class="epgrid"><figure class="ep"><video src="assets/human/wrong_location.mp4" muted loop controls playsinline preload="none"></video><figcaption><b>wrong_location</b> <span style="color:var(--red)">[ERROR — should flag]</span><br>Heads to the wrong station / wrong instance.</figcaption></figure><figure class="ep"><video src="assets/human/raw_on_plate.mp4" muted loop controls playsinline preload="none"></video><figcaption><b>raw_on_plate (skip prep)</b> <span style="color:var(--red)">[ERROR — should flag]</span><br>Scoops a RAW item straight onto the plate — no cooking.</figcaption></figure><figure class="ep"><video src="assets/human/stall.mp4" muted loop controls playsinline preload="none"></video><figcaption><b>stall (ignore / forget)</b> <span style="color:var(--red)">[ERROR — should flag]</span><br>Stops making progress and idles.</figcaption></figure><figure class="ep"><video src="assets/human/add_ingredient.mp4" muted loop controls playsinline preload="none"></video><figcaption><b>add_ingredient</b> <span style="color:var(--green)">[BENIGN — should NOT flag]</span><br>Fetches an off-plan ingredient — a legitimate change, not an error.</figcaption></figure><figure class="ep"><video src="assets/human/dawdle.mp4" muted loop controls playsinline preload="none"></video><figcaption><b>dawdle</b> <span style="color:var(--green)">[BENIGN — should NOT flag]</span><br>Correct steps, just slow — a distractor; should NOT be interrupted.</figcaption></figure></div>
+<h2>The five tests — ground truth first, then what the VLM did</h2>
+<p class="small">Three are real errors (the supervisor should interrupt); two are benign (it should stay quiet).
+Left = the 3D frames; the HUD on the right marks the active deviation and its before-action window.</p>
+<div class="card"><div class="ch"><span class="badge" style="border-color:var(--red);color:var(--red)">ERROR — supervisor SHOULD interrupt</span><h3>Wrong location / wrong instance</h3></div><div class="cb"><div class="cv"><video src="assets/human/wrong_location.mp4" muted loop controls playsinline preload="none"></video></div><div class="ct"><div class="gt"><span class="gl ok">✓ correct</span>Walk to the station the recipe needs next.</div><div class="gt"><span class="gl bad">✗ what happens</span>Walks to a station the recipe does NOT need right now — or the wrong one of two identical stations.</div><div class="res"><b style="color:var(--green)">VLM caught it: 25/26 (96%)</b> · before it committed: 19/26 (73%)</div></div></div></div><div class="card"><div class="ch"><span class="badge" style="border-color:var(--red);color:var(--red)">ERROR — supervisor SHOULD interrupt</span><h3>Raw on plate (skipped prep)</h3></div><div class="cb"><div class="cv"><video src="assets/human/raw_on_plate.mp4" muted loop controls playsinline preload="none"></video></div><div class="ct"><div class="gt"><span class="gl ok">✓ correct</span>Cook or chop the ingredient first, THEN scoop it onto the plate.</div><div class="gt"><span class="gl bad">✗ what happens</span>Scoops a RAW, uncooked ingredient straight onto the plate, skipping the cooking step entirely.</div><div class="res"><b style="color:var(--green)">VLM caught it: 25/27 (93%)</b> · before it committed: 20/27 (74%)</div></div></div></div><div class="card"><div class="ch"><span class="badge" style="border-color:var(--red);color:var(--red)">ERROR — supervisor SHOULD interrupt</span><h3>Stall (ignore / forget)</h3></div><div class="cb"><div class="cv"><video src="assets/human/stall.mp4" muted loop controls playsinline preload="none"></video></div><div class="ct"><div class="gt"><span class="gl ok">✓ correct</span>Keep making progress toward the next plan step.</div><div class="gt"><span class="gl bad">✗ what happens</span>Stops and stands idle when it should be acting — models a human who ignores the task or forgets the next step.</div><div class="res"><b style="color:var(--green)">VLM caught it: 24/26 (92%)</b> · before it committed: 22/26 (85%)</div></div></div></div><div class="card"><div class="ch"><span class="badge" style="border-color:var(--green);color:var(--green)">BENIGN (announced) — should NOT interrupt</span><h3>Add ingredient (announced change)</h3></div><div class="cb"><div class="cv"><video src="assets/human/add_ingredient.mp4" muted loop controls playsinline preload="none"></video></div><div class="ct"><div class="gt"><span class="gl ok">✓ correct</span>Use only the recipe's ingredients.</div><div class="gt"><span class="gl bad">✗ what happens</span>Fetches an EXTRA, off-plan ingredient — but SAYS so out loud (a <human message>). It is intentional, so it is NOT an error.</div><div class="res"><b style="color:var(--red)">VLM correctly left it alone: 5/26 (19%)</b> · wrongly interrupted: 21/26</div></div></div></div><div class="card"><div class="ch"><span class="badge" style="border-color:var(--accent);color:var(--accent)">BENIGN (just slow) — should NOT interrupt</span><h3>Dawdle (slow but correct)</h3></div><div class="cb"><div class="cv"><video src="assets/human/dawdle.mp4" muted loop controls playsinline preload="none"></video></div><div class="ct"><div class="gt"><span class="gl ok">✓ correct</span>Work efficiently toward the dish.</div><div class="gt"><span class="gl bad">✗ what happens</span>Does all the right steps but idles about half the time — slow, with no message. Annoying, but NOT an error.</div><div class="res"><b style="color:var(--red)">VLM correctly left it alone: 0/27 (0%)</b> · wrongly interrupted: 27/27</div></div></div></div>
 </section>
 
 <section class="wrap">
-  <h2>Phase 1 — can the VLM DETECT it? (gemini-3.1-pro, pure RGB)</h2>
-  <h3>Real errors — recall &amp; before-action rate</h3>
-  <table><tr><th>deviation</th><th>detected (recall)</th><th>caught before-action</th><th>false-interrupt (during clean play)</th></tr>
-  <tr><td>raw_on_plate</td><td class="g">27/27 (100%)</td><td class="g">27/27 (100%)</td><td class="r">10/27</td></tr><tr><td>stall</td><td class="g">27/27 (100%)</td><td class="g">26/27 (96%)</td><td class="r">11/27</td></tr><tr><td>wrong_location</td><td class="g">25/27 (93%)</td><td class="g">19/27 (70%)</td><td class="r">14/27</td></tr></table>
-  <h3>Non-errors — should be left alone (false-interrupt rate)</h3>
-  <table><tr><th>case</th><th>wrongly interrupted</th></tr><tr><td>add_ingredient</td><td class="r">27/27 (100%)</td></tr><tr><td>dawdle</td><td class="r">26/27 (96%)</td></tr></table>
-  <div class="callout"><b>Finding: near-perfect recall, poor precision.</b> Pro detects the real errors almost every time
-  and <b>mostly before they commit</b> (raw-on-plate 100% before-action; stall ~96%; wrong-location ~70%). But it is
-  <b>trigger-happy</b>: it flags the legitimate <code>add_ingredient</code> and the slow-but-correct <code>dawdle</code>
-  essentially every time, and even raises some interrupts during the correct phase of error episodes. A useful supervisor
-  needs to tell a real mistake from a benign deviation — that precision is what's missing.</div>
-  <p class="small">Next: Phase 2 — detect <i>and recover</i> (the interrupt must actually fix the dish), scoring
-  post-recovery task success.</p>
+<h2>The supervisor's exact prompt</h2>
+<p class="small">Pulled straight from the code (also on the <a href="prompts.html">prompts page</a>). This is the whole
+instruction the model gets — read it against the results below and judge for yourself whether the prompt is the problem.</p>
+<div class="pl">System prompt</div><pre class="prompt">You are SUPERVISING one cook in a 3D top-down cooking game. You and the cook BOTH already know the
+shared plan to make the dish; the cook executes it ON ITS OWN. You only WATCH the video — you do NOT drive it.
+
+DEFAULT TO TRUSTING THE COOK. It is skilled and knows the plan; the order it picks up ingredients can vary and is
+usually fine. Reply intervene=false unless you have CLEAR visual evidence of a real mistake. If you are merely
+unsure what it is doing, or just can&#x27;t see the order yet, do NOT interrupt. A false alarm is costly.
+INTERRUPT only when the cook clearly DEVIATES from correct execution:
+- goes to the WRONG station or the wrong one of two identical stations,
+- puts a RAW / uncooked / unchopped item on the plate (raw items are brightly coloured; cooked items are browned),
+- does steps OUT OF ORDER, or is about to SERVE an incomplete plate,
+- uses the WRONG ingredient or wrong amount,
+- or STALLS — stops making progress / stands idle when it should be acting.
+If the cook is simply slow but still doing the right thing, do NOT interrupt. Use the sequence of frames to judge
+direction and progress; catch a mistake from the TRAJECTORY before it commits when you can.
+
+THE HUMAN MAY TALK TO YOU. Sometimes a line &quot;&lt;human message&gt;: ...&quot; appears — that is the cook telling you something
+out loud. A real person ANNOUNCES their intentional changes and requests, but NEVER announces a mistake. So:
+- if the human ANNOUNCES a change (&quot;let&#x27;s also add a tomato&quot;, &quot;use the pan instead&quot;) that off-plan action is
+  INTENTIONAL — do NOT interrupt; accept it and treat the new plan as correct from now on.
+- if the human ASKS something (&quot;what&#x27;s next?&quot;), answer it in &quot;command&quot; and set intervene=false.
+- a deviation with NO message and no good reason is a real error — flag it.
+
+OUTPUT strict JSON: {&quot;intervene&quot;: true|false, &quot;type&quot;: &quot;&lt;one of: wrong_location, raw_on_plate, wrong_order,
+omission, premature_serve, wrong_ingredient, stall, none&gt;&quot;, &quot;command&quot;: &quot;&lt;short correction or answer, or empty&gt;&quot;}.</pre>
+<div class="pl">Assembled user turn each poll (example: the human announces an add)</div><pre class="prompt">The dish &amp; SHARED PLAN you both know:
+RECIPE — Cheeseburger (build the plate in THIS EXACT ORDER): (1) bun (raw); (2) meat (cooked); (3) cheese (raw). Cook items that need cooking (pot/pan/oven), chop items that need chopping (board), then HOLD a plate and &#x27;scoop&#x27; each onto it in the order bun -&gt; meat -&gt; cheese, and serve.
+Plan steps:
+  1. go to the meat source
+  2. pick up
+  3. go to the pan
+  4. put down
+  5. turn on
+  6. go to the plates
+  7. pick up
+  8. go to the bun source
+  9. scoop
+  10. go to the pan
+  11. scoop
+  12. go to the cheese source
+  13. scoop
+  14. go to the serving pass
+  15. serve
+
+&lt;human message&gt;: let&#x27;s also add a meat to the plate — adding it on purpose.
+
+Below are the last 5 video frames (oldest first). Is the cook deviating RIGHT NOW? Output the JSON.
+[5 PNG frames attached]</pre>
+<div class="pl">Model reply (strict JSON)</div><pre class="prompt reply">{&quot;intervene&quot;: false, &quot;type&quot;: &quot;none&quot;, &quot;command&quot;: &quot;ok, adding the extra patty — plan updated&quot;}</pre>
 </section>
-<footer class="wrap" style="padding:30px 24px;color:var(--muted)">🍳 <b>CookSim</b> — human-agent monitoring. <a href="controller.html">Controller results →</a></footer>
+
+<section class="wrap">
+<h2>Phase-1 scoreboard (gemini-3.1-pro, pure RGB + message channel)</h2>
+<table><tr><th>test</th><th>kind</th><th>result</th></tr>
+<tr><td>Wrong location / wrong instance</td><td>error</td><td class="g">caught 25/26 (96%), before-action 73%</td></tr><tr><td>Raw on plate (skipped prep)</td><td>error</td><td class="g">caught 25/27 (93%), before-action 74%</td></tr><tr><td>Stall (ignore / forget)</td><td>error</td><td class="g">caught 24/26 (92%), before-action 85%</td></tr><tr><td>Add ingredient (announced change)</td><td>benign</td><td class="r">left alone 5/26 (19%)</td></tr><tr><td>Dawdle (slow but correct)</td><td>benign</td><td class="r">left alone 0/27 (0%)</td></tr></table>
+<div class="callout"><b>Recall is good; precision is the real problem.</b> The supervisor catches 74/79
+(94%) of the real errors, 77% of them before the mistake commits. But it is badly
+trigger-happy — and the fix we expected did not work: <b>even after we add the message channel AND tell the model to
+trust a competent cook</b>, it still wrongly interrupts the legitimate announced add <b>21/26</b> times
+and the slow-but-correct dawdle <b>27/27</b>. It reads the <code>&lt;human message&gt;</code> yet
+flags the very change that was announced. The bias toward intervening seems baked in, not a prompting gap — which is
+exactly why the prompt is printed above for you to scrutinise.<br><br><b>Next:</b> push precision (better instructions,
+or a learned threshold), then Phase 2 — the interrupt must actually <i>recover</i> the dish, scored by post-recovery success.</div>
+</section>
+<footer class="wrap" style="padding:30px 24px;color:var(--muted)">🍳 <b>CookSim</b> — human-agent monitoring.
+<a href="controller.html">Controller results →</a> · <a href="prompts.html">The prompts →</a></footer>
 </body></html>
