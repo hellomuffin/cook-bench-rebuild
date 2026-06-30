@@ -32,21 +32,22 @@ on the same 9 tasks separate the two abilities (gemini-3.1-pro, 3 reps each).</p
   Tests pure <b>planning</b>.</p></div>
   <div><b>② Timing (follow a correct plan)</b><p class="small" style="margin:6px 0 0">Hand the model the <b>verified
   ground-truth plan</b>; each second it only decides <b>advance vs wait</b> — issue the next command when the cook is
-  ready. Tests <b>execution / timing</b>.</p></div>
+  ready. Tests <b>execution / timing</b>. <b>Pixels-only:</b> the agent is shown neither the cook's position nor any
+  coordinates in the plan, so it must read "step done?" from the video alone.</p></div>
 </div></section>
 
 <section class="wrap"><h2>Headline</h2>
 <div class="big">
   <div class="stat"><div class="n" style="color:var(--blue)">59%</div><div class="l">can PLAN it (16/27)</div></div>
-  <div class="stat"><div class="n" style="color:var(--green)">88%</div><div class="l">can FOLLOW a correct plan (24/27)</div></div>
-  <div class="stat"><div class="n" style="color:var(--accent)">+29</div><div class="l">points gained when handed the plan</div></div>
+  <div class="stat"><div class="n" style="color:var(--green)">81%</div><div class="l">can FOLLOW a correct plan (22/27)</div></div>
+  <div class="stat"><div class="n" style="color:var(--accent)">+22</div><div class="l">points gained when handed the plan</div></div>
 </div>
-<div class="callout"><b>It's a better follower than planner.</b> Given a correct plan it succeeds 88% of the
+<div class="callout"><b>It's a better follower than planner.</b> Given a correct plan it succeeds 81% of the
 time; left to plan for itself, only 59%. So a large share of controller failures are <b>planning</b>
 failures, not execution. The gap that remains under "follow" is a <b>timing/perception</b> problem (below).</div></section>
 
 <section class="wrap"><h2>Per task</h2>
-<table><tr><th>dish</th><th>n_ops · map</th><th>PLAN (open-loop)</th><th>FOLLOW (timing)</th><th>read</th></tr><tr><td>Caprese</td><td class="sm">easy-nops · easy-map</td><td style="background:rgb(148,173,128)">2/3</td><td style="background:rgb(95,207,148)">3/3</td><td class="sm">follows, can't plan</td></tr><tr><td>Caprese</td><td class="sm">easy-nops · medium-map</td><td style="background:rgb(255,106,90)">0/3</td><td style="background:rgb(95,207,148)">3/3</td><td class="sm">follows, can't plan</td></tr><tr><td>Caprese</td><td class="sm">easy-nops · hard-map</td><td style="background:rgb(95,207,148)">3/3</td><td style="background:rgb(95,207,148)">3/3</td><td class="sm">plans & follows</td></tr><tr><td>Cheeseburger</td><td class="sm">medium-nops · easy-map</td><td style="background:rgb(95,207,148)">3/3</td><td style="background:rgb(95,207,148)">3/3</td><td class="sm">plans & follows</td></tr><tr><td>Cheeseburger</td><td class="sm">medium-nops · medium-map</td><td style="background:rgb(95,207,148)">3/3</td><td style="background:rgb(95,207,148)">3/3</td><td class="sm">plans & follows</td></tr><tr><td>Cheeseburger</td><td class="sm">medium-nops · hard-map</td><td style="background:rgb(255,106,90)">0/3</td><td style="background:rgb(148,173,128)">2/3</td><td class="sm">follows, can't plan</td></tr><tr><td>Pizza</td><td class="sm">hard-nops · easy-map</td><td style="background:rgb(201,139,109)">1/3</td><td style="background:rgb(201,139,109)">1/3</td><td class="sm">partial both</td></tr><tr><td>Pizza</td><td class="sm">hard-nops · medium-map</td><td style="background:rgb(201,139,109)">1/3</td><td style="background:rgb(95,207,148)">3/3</td><td class="sm">follows, can't plan</td></tr><tr><td>Pizza</td><td class="sm">hard-nops · hard-map</td><td style="background:rgb(95,207,148)">3/3</td><td style="background:rgb(95,207,148)">3/3</td><td class="sm">plans & follows</td></tr></table>
+<table><tr><th>dish</th><th>n_ops · map</th><th>PLAN (open-loop)</th><th>FOLLOW (timing)</th><th>read</th></tr><tr><td>Caprese</td><td class="sm">easy-nops · easy-map</td><td style="background:rgb(148,173,128)">2/3</td><td style="background:rgb(95,207,148)">3/3</td><td class="sm">follows, can't plan</td></tr><tr><td>Caprese</td><td class="sm">easy-nops · medium-map</td><td style="background:rgb(255,106,90)">0/3</td><td style="background:rgb(95,207,148)">3/3</td><td class="sm">follows, can't plan</td></tr><tr><td>Caprese</td><td class="sm">easy-nops · hard-map</td><td style="background:rgb(95,207,148)">3/3</td><td style="background:rgb(95,207,148)">3/3</td><td class="sm">plans & follows</td></tr><tr><td>Cheeseburger</td><td class="sm">medium-nops · easy-map</td><td style="background:rgb(95,207,148)">3/3</td><td style="background:rgb(95,207,148)">3/3</td><td class="sm">plans & follows</td></tr><tr><td>Cheeseburger</td><td class="sm">medium-nops · medium-map</td><td style="background:rgb(95,207,148)">3/3</td><td style="background:rgb(95,207,148)">3/3</td><td class="sm">plans & follows</td></tr><tr><td>Cheeseburger</td><td class="sm">medium-nops · hard-map</td><td style="background:rgb(255,106,90)">0/3</td><td style="background:rgb(95,207,148)">3/3</td><td class="sm">follows, can't plan</td></tr><tr><td>Pizza</td><td class="sm">hard-nops · easy-map</td><td style="background:rgb(201,139,109)">1/3</td><td style="background:rgb(201,139,109)">1/3</td><td class="sm">partial both</td></tr><tr><td>Pizza</td><td class="sm">hard-nops · medium-map</td><td style="background:rgb(201,139,109)">1/3</td><td style="background:rgb(255,106,90)">0/3</td><td class="sm">fails both (timing too)</td></tr><tr><td>Pizza</td><td class="sm">hard-nops · hard-map</td><td style="background:rgb(95,207,148)">3/3</td><td style="background:rgb(95,207,148)">3/3</td><td class="sm">plans & follows</td></tr></table>
 <p class="small">Cells like the medium-map Caprese and the harder Pizzas show the signature pattern: <b>0–1/3 when planning,
 but 3/3 when following</b> — it knows the steps once told, it just can't compose them itself.</p></section>
 
@@ -83,12 +84,20 @@ serve</pre><p class="small">Break: <code>put down</code> — can&#x27;t put that
 "pick up &amp; put down", or assembling in the wrong order/station. The model knows the ingredients but not the
 exact interaction grammar.</div></section>
 
-<section class="wrap"><h2>Why following sometimes still fails — timing</h2>
-<p class="muted">Even with the correct plan in hand, a few hard cells fail — and the cause is uniform:</p>
-<ul class="muted"><li><b>Cheeseburger</b> (medium-nops·hard-map): issued 10/15, advanced too early 23× — kept ordering the next step before the cook finished, so steps were dropped and it ran out of time.</li><li><b>Pizza</b> (hard-nops·easy-map): issued 18/25, advanced too early 50× — kept ordering the next step before the cook finished, so steps were dropped and it ran out of time.</li><li><b>Pizza</b> (hard-nops·easy-map): issued 18/25, advanced too early 64× — kept ordering the next step before the cook finished, so steps were dropped and it ran out of time.</li></ul>
-<div class="callout"><b>The residual failure is detecting action completion.</b> On the hardest cells the model
-repeatedly says "advance" before the cook has actually finished (the manipulation is dropped, it retries, time bleeds
-away). Same root cause the <a href="controller.html">controller traces</a> show: it can't reliably tell from pixels
-when an action has completed.</div></section>
+<section class="wrap"><h2>Why following sometimes still fails — perceiving completion</h2>
+<div class="callout" style="border-left-color:var(--red)"><b>Measurement honesty:</b> an earlier version of this test
+leaked the answer — it showed the cook's live <code>(x,y)</code> position and baked <code>(x,y)</code> coordinates into
+the plan, so the model could confirm "arrived" by <b>coordinate-matching</b> instead of looking. That inflated FOLLOW to
+<b>88%</b>. With both removed (pixels-only), it is <b>81% (22/27)</b> — and the failures all share one cause.</div>
+<p class="muted">Remaining following-failures:</p>
+<ul class="muted"><li><b>Pizza</b> (hard-nops·easy-map): issued 18/25, advanced too early 59× — kept ordering the next step before the cook finished, so steps were dropped and it ran out of time.</li><li><b>Pizza</b> (hard-nops·easy-map): issued 18/25, advanced too early 68× — kept ordering the next step before the cook finished, so steps were dropped and it ran out of time.</li><li><b>Pizza</b> (hard-nops·medium-map): issued 2/25, advanced too early 0× — kept ordering the next step before the cook finished, so steps were dropped and it ran out of time.</li><li><b>Pizza</b> (hard-nops·medium-map): issued 2/25, advanced too early 0× — kept ordering the next step before the cook finished, so steps were dropped and it ran out of time.</li><li><b>Pizza</b> (hard-nops·medium-map): issued 2/25, advanced too early 0× — kept ordering the next step before the cook finished, so steps were dropped and it ran out of time.</li></ul>
+<div class="callout"><b>The residual failure is perceiving step-completion from pixels.</b> The clearest case —
+<code>hard_nops_medium_map</code>, which passed 3/3 only with the coordinate crutch and went <b>0/3</b> pixels-only:
+the cook <b>is already holding the dough</b> (the "pick up" succeeded), yet the model repeats <i>"the cook has not
+picked up the dough yet"</i> <b>98 times</b> and never advances — it cannot see the held item in the frame. Same root
+cause across the board: it can't tell from pixels that an action finished.
+<br><br><b>This is exactly what the new controller <a href="controller.html">feedback channel</a> targets:</b> a
+<code>command received and executed</code> line tells the model the pickup worked without it having to perceive the
+held item; agent++/+++ additionally surface position and <code>holding […]</code>.</div></section>
 <footer class="wrap" style="padding:30px 24px;color:var(--muted)">🍳 <b>CookSim</b> — plan vs follow. <a href="controller.html">Controller results →</a></footer>
 </body></html>
