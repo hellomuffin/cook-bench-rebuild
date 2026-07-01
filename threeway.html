@@ -1,0 +1,62 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>CookSim — 3 agents × 5 inputs + error analysis</title>
+<style>
+:root{--bg:#15121b;--card:#241e2e;--ink:#f4eee7;--muted:#b6abc2;--line:#3a3247;--accent:#ffb454;--green:#5fcf94;--blue:#5aa9e6;--red:#ff6a5a;--code:#1a1622;}
+*{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink);line-height:1.65}
+a{color:var(--accent)}code{font-family:"SF Mono",Menlo,Consolas,monospace;background:var(--code);padding:1px 5px;border-radius:5px;font-size:12.5px}
+nav{position:sticky;top:0;z-index:20;background:rgba(21,18,27,.9);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);display:flex;gap:18px;padding:12px 24px;flex-wrap:wrap}
+nav a{color:var(--muted);text-decoration:none;font-size:14px;font-weight:600}nav a:hover{color:var(--ink)}
+.wrap{max-width:1000px;margin:0 auto;padding:0 24px}h1{font-size:32px;margin:26px 0 8px}h2{font-size:22px;margin:30px 0 8px}
+.muted{color:var(--muted)}.small{font-size:13px;color:var(--muted)}.kicker{color:var(--accent);font-weight:800;letter-spacing:2px;text-transform:uppercase;font-size:12px;margin-top:22px}
+.callout{background:var(--card);border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:10px;padding:14px 16px;margin:14px 0;font-size:14px}
+table{border-collapse:collapse;margin:12px 0;font-size:14px;width:100%}th,td{padding:8px 10px;text-align:center;border-bottom:1px solid var(--line)}th{color:var(--muted);font-size:12px}
+table.big td{color:#15121b;font-weight:800;border:2px solid var(--card);border-radius:6px}table.big th{text-align:left;color:var(--ink);font-weight:700}
+td.na{color:var(--muted);background:none!important}
+table.ea td.m,table.ea th:first-child{text-align:left;color:var(--muted);font-size:12.5px}table.ea td{font-variant-numeric:tabular-nums}
+table.tier th{text-align:left}table.tier td{color:var(--ink);font-weight:600}
+</style></head><body>
+<nav><div style="font-weight:800">🍳 CookSim</div><a href="index.html">← Home</a><a href="controller.html">📊 Controller</a><a href="planning.html">🧭 Plan vs follow</a><a href="prompts.html">📝 Prompts</a><a href="grid.html">▦ Tasks</a></nav>
+<header class="wrap"><div class="kicker">3 agents × 5 inputs</div>
+<h1>Which agent, which input?</h1>
+<p class="muted">Three architectures — a <b>reactive controller</b> (command each step), <b>plan-act simple</b> (flat plan
+then execute), and <b>plan-act structured</b> (PWR-style revisable plan + visual cues) — each across five input
+settings. All under one fair config: single standing order, cap 300 frames, no early give-up. gemini-3.1-pro,
+9 tasks × 3 reps per cell. Below: the grid, then a comprehensive error analysis per agent.</p></header>
+
+<section class="wrap"><h2>The grid — task solve rate (%)</h2>
+<table class="big"><tr><th></th><th>basic</th><th>state-map</th><th>agent+</th><th>agent++</th><th>agent+++</th></tr><tr><th>Controller (reactive)</th><td style="background:rgb(224,125,101)">19%</td><td style="background:rgb(125,187,136)">81%</td><td style="background:rgb(178,154,117)">48%</td><td style="background:rgb(151,171,127)">65%</td><td style="background:rgb(165,162,122)">56%</td></tr><tr><th>Plan-act simple</th><td style="background:rgb(255,106,90)">0%</td><td style="background:rgb(187,148,114)">42%</td><td style="background:rgb(147,173,128)">67%</td><td style="background:rgb(119,191,139)">85%</td><td style="background:rgb(130,184,135)">78%</td></tr><tr><th>Plan-act structured</th><td style="background:rgb(248,110,92)">4%</td><td style="background:rgb(160,165,124)">59%</td><td style="background:rgb(101,202,145)">96%</td><td style="background:rgb(106,199,143)">93%</td><td style="background:rgb(95,207,148)">100%</td></tr></table>
+<div class="callout"><b>Best agent × input:</b> plan-act <b>structured + feedback</b> tops out at <b>100% </b>
+(agent+++) and <b>96%</b> (agent+). Ranking with feedback: structured &gt; simple &gt; controller.
+But note the reactive controller's standout: the <b>state-map</b> column.</div></section>
+
+<section class="wrap"><h2>The hard tier is a PERCEPTION ceiling, not a planning ceiling</h2>
+<p class="muted">Controller solve by task-length tier × input:</p>
+<table class="tier"><tr><th></th><th>basic</th><th>state-map</th><th>agent+</th><th>agent++</th><th>agent+++</th></tr><tr><th>easy</th><td>4/9</td><td>9/9</td><td>9/9</td><td>9/9</td><td>9/9</td></tr><tr><th>medium</th><td>1/9</td><td>6/9</td><td>4/9</td><td>8/9</td><td>6/9</td></tr><tr><th>hard</th><td>0/9</td><td>6/8</td><td>0/9</td><td>0/8</td><td>0/9</td></tr></table>
+<div class="callout" style="border-left-color:var(--red)"><b>Hard Pizza (3 simultaneous cooks) is 0% on every RGB
+condition — including the full feedback ladder — but 6/8
+with the labelled state map.</b> Given a clean readout of what's cooked / on the plate / where things are, the reactive
+model handles the 3-cook Pizza; it simply can't read that state from pixels. So the earlier "can't plan Pizza" is really
+<b>can't perceive the Pizza state</b>.</div></section>
+
+<h2 class="wrap" style="border-top:1px solid var(--line);padding-top:10px">Comprehensive error analysis</h2>
+<section class="wrap"><h2>Controller (reactive)</h2><p class="small">issues a command each step; no upfront plan</p><table class="ea"><tr><th></th><th>basic</th><th>state-map</th><th>agent+</th><th>agent++</th><th>agent+++</th></tr><tr><td class='m'>solve</td><td><b>19%</b></td><td><b>81%</b></td><td><b>48%</b></td><td><b>65%</b></td><td><b>56%</b></td></tr><tr><td class='m'>illegal cmds</td><td>37%</td><td>4%</td><td>27%</td><td>16%</td><td>17%</td></tr><tr><td class='m'>grounding/run</td><td>0.0</td><td>0.0</td><td>0.741</td><td>0.654</td><td>0.704</td></tr><tr><td class='m'>top failure</td><td>never served (stuck/incomplete)</td><td>never served (stuck/incomplete)</td><td>never served (stuck/incomplete)</td><td>never served (stuck/incomplete)</td><td>never served (stuck/incomplete)</td></tr><tr><td class='m'>stuck runs</td><td>15</td><td>0</td><td>0</td><td>2</td><td>5</td></tr></table><div class="callout">The <b>illegal-command rate</b> tracks failure almost perfectly: <b>37% (basic) → 4% (state-map)</b>. With the labelled state map the reactive controller barely mis-issues, and it even solves hard Pizza (below). Its RGB failures are mostly <i>never finishing the plate</i> (stuck/incomplete), not wrong plating.</div></section>
+<section class="wrap"><h2>Plan-act simple</h2><p class="small">plans once, then executes a flat fixed plan</p><table class="ea"><tr><th></th><th>basic</th><th>state-map</th><th>agent+</th><th>agent++</th><th>agent+++</th></tr><tr><td class='m'>solve</td><td><b>0%</b></td><td><b>42%</b></td><td><b>67%</b></td><td><b>85%</b></td><td><b>78%</b></td></tr><tr><td class='m'>illegal cmds</td><td>48%</td><td>19%</td><td>6%</td><td>2%</td><td>4%</td></tr><tr><td class='m'>grounding/run</td><td>1.852</td><td>0.5</td><td>1.593</td><td>1.296</td><td>1.519</td></tr><tr><td class='m'>plan CORRECT</td><td>18/27</td><td>13/26</td><td>16/27</td><td>16/27</td><td>15/27</td></tr><tr><td class='m'>plan-ok but FAILED</td><td>18</td><td>7</td><td>1</td><td>0</td><td>0</td></tr><tr><td class='m'>plan executed</td><td>36%</td><td>39%</td><td>58%</td><td>52%</td><td>61%</td></tr></table><div class="callout">The <b>plan-ok-but-FAILED</b> row is the story: in <b>basic</b> every correct plan still fails (execution collapses with no feedback), but with feedback it drops to ~0 — the model can finally <i>execute its own correct plan</i>. Illegal-command rate falls in step (basic → agent+).</div></section>
+<section class="wrap"><h2>Plan-act structured</h2><p class="small">PWR-style revisable plan + visual cues</p><table class="ea"><tr><th></th><th>basic</th><th>state-map</th><th>agent+</th><th>agent++</th><th>agent+++</th></tr><tr><td class='m'>solve</td><td><b>4%</b></td><td><b>59%</b></td><td><b>96%</b></td><td><b>93%</b></td><td><b>100%</b></td></tr><tr><td class='m'>illegal cmds</td><td>28%</td><td>15%</td><td>8%</td><td>6%</td><td>3%</td></tr><tr><td class='m'>grounding/run</td><td>4.741</td><td>0.741</td><td>0.778</td><td>0.741</td><td>0.963</td></tr><tr><td class='m'>plan CORRECT</td><td>7/27</td><td>5/27</td><td>6/27</td><td>10/27</td><td>8/27</td></tr><tr><td class='m'>plan-ok but FAILED</td><td>7</td><td>3</td><td>0</td><td>1</td><td>0</td></tr><tr><td class='m'>plan executed</td><td>15%</td><td>23%</td><td>36%</td><td>49%</td><td>38%</td></tr><tr><td class='m'>plan revisions/run</td><td>3.148</td><td>4.333</td><td>4.222</td><td>2.852</td><td>2.259</td></tr></table><div class="callout">The <b>plan-ok-but-FAILED</b> row is the story: in <b>basic</b> every correct plan still fails (execution collapses with no feedback), but with feedback it drops to ~0 — the model can finally <i>execute its own correct plan</i>. Illegal-command rate falls in step (basic → agent+).</div></section>
+
+<section class="wrap"><h2>Cross-cutting findings</h2>
+<div class="callout"><b>1. Illegal-command rate is the master signal.</b> Across all agents it moves inversely with solve
+rate — e.g. controller 37%→4% (basic→state-map), plan-act simple 48%→2% (basic→agent++). Bad inputs → the model
+issues commands the engine rejects → it derails.</div>
+<div class="callout"><b>2. "Plan-correct but still failed" proves basic's 0% is execution, not planning.</b> Plan-act's
+self-made plans are ~60% correct (they deliver under the robust harness), yet in <b>basic</b> <i>every</i> correct plan
+fails when the VLM executes it live — with feedback that collapses to ~0 failed. Feedback is what makes live execution
+work.</div>
+<div class="callout"><b>3. The state map beats the text feedback ladder for the reactive controller</b> (81%
+vs 48% at agent+), and is the only input that cracks hard Pizza — a strong vote for giving
+the model structured perception over more text.</div>
+<div class="callout"><b>4. Structured (PWR-style) re-planning pays off, but only with feedback</b> — it revises its plan
+several times per run and reaches 100% at agent+++, vs simple's 78%.</div>
+</section>
+<footer class="wrap" style="padding:30px 24px;color:var(--muted)">🍳 <b>CookSim</b> — 3-way comparison & error analysis. <a href="controller.html">Controller →</a> · <a href="planning.html">Plan vs follow →</a></footer>
+</body></html>
